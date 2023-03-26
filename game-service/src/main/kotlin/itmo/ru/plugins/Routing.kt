@@ -65,6 +65,9 @@ data class MessageResponse(val message: Message) : Response(Method.CHAT)
 data class GameResponse(val game: Game) : Response(Method.CREATE)
 
 @Serializable
+data class JoinGameResponse(val game: Game) : Response(Method.JOIN)
+
+@Serializable
 data class GameUpdate(val game: Game) : Response(Method.UPDATE)
 
 
@@ -111,7 +114,7 @@ fun Application.configureRouting() {
                         }
                     }
                 }
-            }
+            }.run()
 
             val clientId = ClientId(getUUID())
             userIds.add(clientId)
@@ -146,11 +149,9 @@ fun Application.configureRouting() {
 
                             connections.forEach { (clientId, connection) ->
                                 if (gameMap[joinRequest.gameId]!!.clients.contains(clientId)) {
-                                    connection?.session?.sendSerialized(GameResponse(gameMap[joinRequest.gameId]!!))
+                                    connection?.session?.sendSerialized(JoinGameResponse(gameMap[joinRequest.gameId]!!))
                                 }
                             }
-
-                            sendSerialized(GameResponse(gameMap[joinRequest.gameId]!!))
                         }
 
                         Method.PLAY -> {
