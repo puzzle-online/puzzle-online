@@ -173,13 +173,6 @@ fun Application.configureRouting() {
                             this@configureRouting.log.error("Unknown method")
                         }
                     }
-//                    timer("set", false, 0, 5000) {
-//                        gameMap.values.forEach { game ->
-//                            game.clients.forEach { clientId ->
-//                                connections[clientId]?.session?.sendSerialized(GameResponse(game))
-//                            }
-//                        }
-//                    }
                 }
             } catch (e: Exception) {
                 this@configureRouting.log.error("Error occurred in websocket", e)
@@ -187,6 +180,10 @@ fun Application.configureRouting() {
                 connections.remove(clientId)
                 userIds.remove(clientId)
                 timer.cancel()
+                // Deleting user from all games
+                gameMap.values.forEach { game ->
+                    game.clients.remove(clientId)
+                }
             }
         }
     }
