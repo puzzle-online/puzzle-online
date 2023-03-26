@@ -25,6 +25,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.corundumstudio.socketio/netty-socketio
     implementation("com.corundumstudio.socketio:netty-socketio:1.7.23")
 
+    implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
