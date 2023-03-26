@@ -5,12 +5,17 @@
       Current session: {{ clientId }}
     </div>
     <div>
-      Current game ID: {{ game.gameId }}, balls: {{ game.balls.length }}, players: {{ game.clients }}
+      Current game ID: {{ game.gameId }}, players: {{ game.clients }}
     </div>
     <div v-for="(message, index) in messages" :key="index">
       {{ message }}
     </div>
-    <Ball v-for="ball in game.balls" :key="ball.ballId" :color="ball.color" />
+    <template v-if="game.balls && game.balls.length">
+      <Ball v-for="ball in game.balls" :key="ball" :color="ball" />
+    </template>
+    <template v-else>
+      <p>No balls yet</p>
+    </template>
     <form @submit.prevent="sendMessage">
       <input v-model="messageText" type="text" placeholder="Type your message here">
       <button type="submit">Send</button>
@@ -73,10 +78,14 @@ export default {
           this.clientId = response.clientId;
         } else if (response.method === 'create') {
           this.game = response.game;
+          console.log('Balls', this.game.balls);
+          console.log('First ball', this.game.balls[0]);
+          console.log('First ball color', this.game.balls[0].color);
         } else if (response.method === 'chat') {
           this.messages.push(`${response.message.sender}: ${response.message.content}`);
         } else if (response.method === 'join') {
           this.game = response.game;
+          console.log('Joined game', JSON.stringify(this.game, null, 2));
         } else if (response.method === 'update') {
           this.game = response.game;
         } else {
