@@ -4,7 +4,6 @@ import io.ktor.serialization.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
-import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 enum class METHOD { CONNECT, CHAT }
@@ -33,12 +32,9 @@ fun Application.configureRouting() {
                 val clientID = getUUID()
                 sendSerialized(UUIDTransfer(clientID))
 
-                while (true) {
-                    for (frame in incoming) {
-                        val data = converter?.deserialize<Message>(frame)!!
-                        sendSerialized(MessageTransfer(data))
-                    }
-                    delay(5000)
+                for (frame in incoming) {
+                    val data = converter?.deserialize<Message>(frame)!!
+                    sendSerialized(MessageTransfer(data))
                 }
 
             } catch (e: Exception) {
