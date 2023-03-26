@@ -4,11 +4,15 @@ import io.ktor.serialization.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
 
 enum class METHOD {
-    CONNECT, CHAT;
+    @SerialName("connect")
+    CONNECT,
+    @SerialName("chat")
+    CHAT;
 
     override fun toString() = name.lowercase(Locale.getDefault())
 }
