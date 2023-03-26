@@ -25,7 +25,7 @@ value class ClientId(val value: String)
 @Serializable
 value class GameId(val value: String)
 
-enum class METHOD {
+enum class Method {
     @SerialName("connect")
     CONNECT,
 
@@ -38,8 +38,8 @@ enum class METHOD {
     @SerialName("join")
     JOIN,
 
-    @SerialName("set")
-    SET,
+    @SerialName("play")
+    PLAY,
 
     @SerialName("update")
     UPDATE;
@@ -51,21 +51,21 @@ enum class METHOD {
 // TODO: think about sealed class
 @Serializable
 @JsonIgnoreProperties(ignoreUnknown = true)
-open class Response(val method: METHOD)
+open class Response(val method: Method)
 
 
 
 @Serializable
-data class ClientIdResponse(val clientId: ClientId) : Response(METHOD.CONNECT)
+data class ClientIdResponse(val clientId: ClientId) : Response(Method.CONNECT)
 
 @Serializable
-data class MessageResponse(val message: Message) : Response(METHOD.CHAT)
+data class MessageResponse(val message: Message) : Response(Method.CHAT)
 
 @Serializable
-data class GameResponse(val game: Game) : Response(METHOD.CREATE)
+data class GameResponse(val game: Game) : Response(Method.CREATE)
 
 @Serializable
-data class GameUpdate(val game: Game) : Response(METHOD.UPDATE)
+data class GameUpdate(val game: Game) : Response(Method.UPDATE)
 
 
 
@@ -127,12 +127,12 @@ fun Application.configureRouting() {
                 for (frame in incoming) {
                     val data = converter?.deserialize<Response>(frame)!!
                     when (data.method) {
-                        METHOD.CHAT -> {
+                        Method.CHAT -> {
                             val message = converter?.deserialize<Message>(frame)!!
                             sendSerialized(MessageResponse(message))
                         }
 
-                        METHOD.CREATE -> {
+                        Method.CREATE -> {
                             val gameId = GameId(getUUID())
                             val game = Game(gameId, MutableList(10) { Color.values().random() })
                             gameMap[gameId] = game
@@ -140,7 +140,7 @@ fun Application.configureRouting() {
                             sendSerialized(GameResponse(game))
                         }
 
-                        METHOD.JOIN -> {
+                        Method.JOIN -> {
                             val joinRequest = converter?.deserialize<JoinRequest>(frame)!!
                             gameMap[joinRequest.gameId]!!.clients.add(joinRequest.clientId)
 
@@ -153,7 +153,7 @@ fun Application.configureRouting() {
                             sendSerialized(GameResponse(gameMap[joinRequest.gameId]!!))
                         }
 
-                        METHOD.SET -> {
+                        Method.PLAY -> {
                             val setRequest = converter?.deserialize<SetRequest>(frame)!!
 
                             gameMap[setRequest.gameId]!!.balls[setRequest.ball.ballId] = setRequest.ball.color
