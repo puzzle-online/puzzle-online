@@ -30,9 +30,6 @@ export default {
       console.log('WebSocket connecting...');
       this.ws.onopen = () => {
         console.log('WebSocket connected');
-        // this.ws.send(JSON.stringify({
-        //   method: 'onconnect',
-        // }));
       };
       this.ws.onmessage = event => {
         const message = JSON.parse(event.data);
@@ -49,6 +46,7 @@ export default {
         return;
       }
       this.ws.send(JSON.stringify({
+        method: 'chat',
         sender: 'Client',
         content: this.messageText,
         timestamp: new Date().toLocaleTimeString(),
