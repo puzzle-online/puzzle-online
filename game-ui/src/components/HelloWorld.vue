@@ -2,7 +2,7 @@
   <div>
     <h1>Chat App</h1>
     <div v-for="(message, index) in messages" :key="index">
-      <strong>{{ message.sender }}</strong>: {{ message.content }} ({{ message.timestamp }})
+      {{ message }}
     </div>
     <form @submit.prevent="sendMessage">
       <input v-model="messageText" type="text" placeholder="Type your message here">
@@ -18,6 +18,7 @@ export default {
       ws: null,
       messageText: '',
       messages: [],
+      clientId: '',
     };
   },
   mounted() {
@@ -25,15 +26,18 @@ export default {
   },
   methods: {
     connect() {
-      this.ws = new WebSocket('ws://localhost:8000/chat');
+      this.ws = new WebSocket('ws://localhost:3000/chat');
       console.log('WebSocket connecting...');
       this.ws.onopen = () => {
         console.log('WebSocket connected');
+        // this.ws.send(JSON.stringify({
+        //   method: 'onconnect',
+        // }));
       };
       this.ws.onmessage = event => {
         const message = JSON.parse(event.data);
         console.log('WebSocket message received:', message)
-        this.messages.push(message);
+        this.messages.push(JSON.stringify(message,null, 2));
       };
       this.ws.onclose = () => {
         console.log('WebSocket disconnected');
