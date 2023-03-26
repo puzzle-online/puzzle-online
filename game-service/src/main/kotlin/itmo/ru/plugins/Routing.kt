@@ -54,7 +54,6 @@ enum class Method {
 open class Response(val method: Method)
 
 
-
 @Serializable
 data class ClientIdResponse(val clientId: ClientId) : Response(Method.CONNECT)
 
@@ -62,18 +61,21 @@ data class ClientIdResponse(val clientId: ClientId) : Response(Method.CONNECT)
 data class MessageResponse(val message: Message) : Response(Method.CHAT)
 
 @Serializable
-data class GameResponse(val game: Game) : Response(Method.CREATE)
+data class CreateGameResponse(val game: Game) : Response(Method.CREATE)
 
 @Serializable
 data class JoinGameResponse(val game: Game) : Response(Method.JOIN)
 
 @Serializable
-data class GameUpdate(val game: Game) : Response(Method.UPDATE)
-
+data class GameUpdateResponse(val game: Game) : Response(Method.UPDATE)
 
 
 @Serializable
-data class Game(val gameId: GameId, val balls: MutableList<Color> = mutableListOf(), val clients: MutableSet<ClientId> = mutableSetOf())
+data class Game(
+    val gameId: GameId,
+    val balls: MutableList<Color> = mutableListOf(),
+    val clients: MutableSet<ClientId> = mutableSetOf(),
+)
 
 @Serializable
 data class Message(val sender: String, val content: String, val timestamp: String)
@@ -106,15 +108,18 @@ fun Application.configureRouting() {
 
         webSocket("/chat") {
 
-            Timer().schedule(5000) {
+            val timer = Timer().schedule(5000, 5000) {
                 gameMap.values.forEach { game ->
                     game.clients.forEach { clientId ->
                         launch {
-                            connections[clientId]?.session?.sendSerialized(GameUpdate(game))
+                            this@configureRouting.log.info("Sending game update to $clientId for game ${game.gameId}")
+                            connections[clientId]?.session?.sendSerialized(GameUpdateResponse(game))
                         }
                     }
                 }
-            }.run()
+            }
+
+            timer.run()
 
             val clientId = ClientId(getUUID())
             userIds.add(clientId)
@@ -140,7 +145,7 @@ fun Application.configureRouting() {
                             val game = Game(gameId, MutableList(10) { Color.values().random() })
                             gameMap[gameId] = game
 
-                            sendSerialized(GameResponse(game))
+                            sendSerialized(CreateGameResponse(game))
                         }
 
                         Method.JOIN -> {
@@ -156,6 +161,10 @@ fun Application.configureRouting() {
 
                         Method.PLAY -> {
                             val setRequest = converter?.deserialize<SetRequest>(frame)!!
+
+                            this@configureRouting.log.info(
+                                "Received set request for game ${setRequest.gameId} and ball ${setRequest.ball.ballId} with color ${setRequest.ball.color} from client ${setRequest.clientId}"
+                            )
 
                             gameMap[setRequest.gameId]!!.balls[setRequest.ball.ballId] = setRequest.ball.color
                         }
@@ -177,6 +186,7 @@ fun Application.configureRouting() {
             } finally {
                 connections.remove(clientId)
                 userIds.remove(clientId)
+                timer.cancel()
             }
         }
     }
