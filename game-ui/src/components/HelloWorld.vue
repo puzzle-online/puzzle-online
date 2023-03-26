@@ -28,15 +28,15 @@
       <button type="submit">Join Game</button>
     </form>
     <form @submit.prevent="playRed">
-      <input v-model="playBallIdStr" type="text" placeholder="Type your message here">
+      <input v-model="playBallIdRed" type="text" placeholder="Type your message here">
       <button type="submit">Make red</button>
     </form>
     <form @submit.prevent="playBlue">
-      <input v-model="playBallIdStr" type="text" placeholder="Type your message here">
+      <input v-model="playBallIdBlue" type="text" placeholder="Type your message here">
       <button type="submit">Make blue</button>
     </form>
     <form @submit.prevent="playGreen">
-      <input v-model="playBallIdStr" type="text" placeholder="Type your message here">
+      <input v-model="playBallIdGreen" type="text" placeholder="Type your message here">
       <button type="submit">Make green</button>
     </form>
   </div>
@@ -57,7 +57,9 @@ export default {
       messages: [],
       clientId: '',
       game: {},
-      playBallIdStr: '0',
+      playBallIdRed: '',
+      playBallIdBlue: '',
+      playBallIdGreen: '',
     };
   },
   mounted() {
@@ -78,9 +80,6 @@ export default {
           this.clientId = response.clientId;
         } else if (response.method === 'create') {
           this.game = response.game;
-          console.log('Balls', this.game.balls);
-          console.log('First ball', this.game.balls[0]);
-          console.log('First ball color', this.game.balls[0].color);
         } else if (response.method === 'chat') {
           this.messages.push(`${response.message.sender}: ${response.message.content}`);
         } else if (response.method === 'join') {
@@ -130,7 +129,7 @@ export default {
         clientId: this.clientId,
         gameId: this.game.gameId,
         ball: {
-          ballId: parseInt(this.playBallIdStr),
+          ballId: parseInt(this.playBallIdRed),
           color: 'red',
         }
       }));
@@ -141,7 +140,7 @@ export default {
         clientId: this.clientId,
         gameId: this.game.gameId,
         ball: {
-          ballId: parseInt(this.playBallIdStr),
+          ballId: parseInt(this.playBallIdBlue),
           color: 'blue',
         }
       }));
@@ -152,7 +151,7 @@ export default {
         clientId: this.clientId,
         gameId: this.game.gameId,
         ball: {
-          ballId: parseInt(this.playBallIdStr),
+          ballId: parseInt(this.playBallIdGreen),
           color: 'green',
         }
       }));
