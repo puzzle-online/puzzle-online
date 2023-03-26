@@ -35,8 +35,8 @@ fun Application.configureRouting() {
 
                 while (true) {
                     for (frame in incoming) {
-                        val data = converter?.deserialize<MessageTransfer>(frame)!!
-                        sendSerialized(data)
+                        val data = converter?.deserialize<Message>(frame)!!
+                        sendSerialized(MessageTransfer(data))
                     }
                     delay(5000)
                 }
