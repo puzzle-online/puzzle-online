@@ -11,17 +11,13 @@ enum class METHOD { CONNECT, CHAT }
 
 // TODO: think about sealed class
 @Serializable
-open class Transfer(val method : METHOD)
+open class Transfer(val method: METHOD)
 
 @Serializable
-data class UUIDTransfer(val uuid: UUID): Transfer(METHOD.CONNECT)
+data class UUIDTransfer(val uuid: String) : Transfer(METHOD.CONNECT)
 
 @Serializable
-data class MessageTransfer(val message: Message): Transfer(METHOD.CHAT)
-
-
-@Serializable
-data class UUID(val uuid: String)
+data class MessageTransfer(val message: Message) : Transfer(METHOD.CHAT)
 
 @Serializable
 data class Message(val sender: String, val content: String, val timestamp: String)
@@ -33,7 +29,7 @@ fun Application.configureRouting() {
         webSocket("/chat") {
             try {
 
-                val clientID = UUID(getUUID())
+                val clientID = getUUID()
                 sendSerialized(UUIDTransfer(clientID))
 
                 for (frame in incoming) {
