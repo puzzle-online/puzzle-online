@@ -5,8 +5,13 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import kotlinx.serialization.Serializable
+import java.util.*
 
-enum class METHOD { CONNECT, CHAT }
+enum class METHOD {
+    CONNECT, CHAT;
+
+    override fun toString() = name.lowercase(Locale.getDefault())
+}
 
 
 // TODO: think about sealed class
@@ -22,7 +27,7 @@ data class MessageTransfer(val message: Message) : Transfer(METHOD.CHAT)
 @Serializable
 data class Message(val sender: String, val content: String, val timestamp: String)
 
-fun getUUID() = java.util.UUID.randomUUID().toString()
+fun getUUID() = UUID.randomUUID().toString()
 
 fun Application.configureRouting() {
     routing {
