@@ -29,7 +29,7 @@ function Ball({ color }) {
 function ChatApp() {
     const [ws, setWs] = useState(null);
     const [clientId, setClientId] = useState('');
-    const [gameId, setGameId] = useState({});
+    const [gameId, setGameId] = useState('');
     const [balls, setBalls] = useState([]);
     const [clientList, setClientList] = useState([]);
     const [gameJoinInput, setGameJoinInput] = useState('');
