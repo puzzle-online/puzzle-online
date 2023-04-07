@@ -107,7 +107,7 @@ function ChatApp() {
     const createGame = sendRequest('create', {});
     const joinGame = sendRequest('join', { gameId: gameJoinInput });
     const playBall = (color) => sendRequest('play', {
-        gameId: gameId.gameId,
+        gameId: gameId,
         ball: {
             ballId: parseInt(color === 'red' ? playBallIdRed : color === 'blue' ? playBallIdBlue : playBallIdGreen),
             color: color,
