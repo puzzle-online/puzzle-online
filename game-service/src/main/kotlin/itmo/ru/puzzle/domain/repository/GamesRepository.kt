@@ -1,12 +1,14 @@
-package itmo.ru.data.game
+package itmo.ru.puzzle.domain.repository
 
-import itmo.ru.data.client.Client
+import itmo.ru.puzzle.domain.model.Client
+import itmo.ru.puzzle.domain.model.Game
+import itmo.ru.puzzle.domain.model.GameId
 
 class GamesRepository {
     private val gameMap = mutableMapOf<GameId, Game>()
 
     fun put(game: Game) {
-        gameMap.putIfAbsent(game.gameId, game)
+        gameMap.putIfAbsent(game.id, game)
     }
 
     fun addClient(gameId: GameId, client: Client) {

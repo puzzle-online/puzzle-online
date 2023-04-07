@@ -5,11 +5,12 @@ import io.ktor.serialization.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
-import itmo.ru.data.*
-import itmo.ru.data.client.Client
-import itmo.ru.data.client.ClientConnectResponse
-import itmo.ru.data.client.ClientId
-import itmo.ru.data.game.*
+import itmo.ru.puzzle.dto.response.toConnectResponse
+import itmo.ru.puzzle.dto.response.toCreateResponse
+import itmo.ru.puzzle.dto.response.toJoinResponse
+import itmo.ru.puzzle.dto.response.toUpdateResponse
+import itmo.ru.puzzle.domain.model.*
+import itmo.ru.puzzle.dto.request.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -19,14 +20,13 @@ import kotlin.concurrent.schedule
 
 
 // TODO: make client game message entities
+// TODO: remove serializable message and ball / separate file into domain
+// TODO: set repos in same package
 
 @Serializable
 enum class Method {
     @SerialName("connect")
     CONNECT,
-
-    @SerialName("chat")
-    CHAT,
 
     @SerialName("create")
     CREATE,
@@ -75,7 +75,7 @@ fun Application.configureRouting() {
                 gameMap.values.forEach { game ->
                     game.clients.forEach { client ->
                         launch {
-                            this@configureRouting.log.info("Sending game update to ${client.id} for game ${game.gameId}")
+                            this@configureRouting.log.info("Sending game update to ${client.id} for game ${game.id}")
                             connections[client.id]?.session?.sendSerialized(game.toUpdateResponse())
                         }
                     }
@@ -92,24 +92,21 @@ fun Application.configureRouting() {
             connections[clientId] = connection
 
             try {
-                sendSerialized(ClientConnectResponse(clientId))
+                sendSerialized(client.toConnectResponse())
 
                 this@configureRouting.log.info("All clients connected: ${userMap.map { it.key }}")
 
                 for (frame in incoming) {
                     val data = converter?.deserialize<Response>(frame)!!
                     when (data.method) {
-                        Method.CHAT -> {
-                            val message = converter?.deserialize<Message>(frame)!!
-
-                            sendSerialized(MessageResponse(message))
-                        }
-
                         Method.CREATE -> {
                             val gameId = GameId(getUUID())
+
                             val game = Game(
                                 gameId,
-                                MutableList(10) { Ball(it, Color.values().random()) }
+                                MutableList(10) {
+                                    Ball(BallId(it), Color.values().random())
+                                }
                             )
 
                             gameMap[gameId] = game
@@ -120,11 +117,14 @@ fun Application.configureRouting() {
                         Method.JOIN -> {
                             val joinRequest = converter?.deserialize<JoinRequest>(frame)!!
 
-                            userMap[joinRequest.clientId]?.let { gameMap[joinRequest.gameId]!!.clients.add(it) }
+                            val user = joinRequest.toClient()
+                            val game = joinRequest.toGame()
+
+                            userMap[user.id]?.let { gameMap[game.id]!!.clients.add(it) }
 
                             connections.forEach { (clientId, connection) ->
-                                if (gameMap[joinRequest.gameId]!!.clients.contains(userMap[clientId]!!)) {
-                                    connection?.session?.sendSerialized(gameMap[joinRequest.gameId]!!.toJoinResponse())
+                                if (gameMap[game.id]!!.clients.contains(userMap[clientId]!!)) {
+                                    connection?.session?.sendSerialized(gameMap[game.id]!!.toJoinResponse())
                                 }
                             }
                             // TODO: log maps with games and clients
@@ -133,11 +133,15 @@ fun Application.configureRouting() {
                         Method.PLAY -> {
                             val setRequest = converter?.deserialize<SetRequest>(frame)!!
 
+                            val game = setRequest.toGame()
+                            val ball = setRequest.toBall()
+
                             this@configureRouting.log.info(
-                                "Received set request for game ${setRequest.gameId} and ball ${setRequest.ball.ballId} with color ${setRequest.ball.color} from client ${setRequest.clientId}"
+                                "Received set request for game ${game.id} and ball ${ball.id} with color ${ball.color} from client ${setRequest.toClient().id}"
                             )
 
-                            gameMap[setRequest.gameId]!!.balls[setRequest.ball.ballId].color = setRequest.ball.color
+                            // TODO: refactor .value call
+                            gameMap[game.id]!!.balls[ball.id.value].color = ball.color
                         }
 
                         else -> {
