@@ -14,4 +14,4 @@ enum class Color {
 }
 
 @Serializable
-data class Ball(val ballId: Int, val color: Color)
+data class Ball(val ballId: Int, var color: Color)
