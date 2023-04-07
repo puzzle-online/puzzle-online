@@ -11,15 +11,15 @@ fun JoinRequest.toClient() = Client(ClientId(clientId))
 fun JoinRequest.toGame() = Game(GameId(gameId))
 
 @Serializable
-data class SetRequest(val clientId: String, val gameId: String, val ballRequest: BallRequest)
+data class PlayRequest(val clientId: String, val gameId: String, val ball: BallRequest)
 
-fun SetRequest.toClient() = Client(ClientId(clientId))
+fun PlayRequest.toClient() = Client(ClientId(clientId))
 
-fun SetRequest.toGame() = Game(GameId(gameId))
+fun PlayRequest.toGame() = Game(GameId(gameId))
 
-fun SetRequest.toBall() = ballRequest.toBall()
+fun PlayRequest.toBall() = ball.toBall()
 
 @Serializable
 data class BallRequest(val ballId: Int, val color: String)
 
-fun BallRequest.toBall() = Ball(BallId(ballId), Color.valueOf(color))
+fun BallRequest.toBall() = Ball(BallId(ballId), Color.valueOf(color.uppercase()))
