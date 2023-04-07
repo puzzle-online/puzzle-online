@@ -3,13 +3,29 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
-function Ball(props) {
-    const {color} = props;
+import React from 'react';
 
-    return (
-        <div className={`ball ${color}-ball`}/>
-    );
+function Ball({ color }) {
+    const ballStyle = {
+        width: '50px',
+        height: '50px',
+        borderRadius: '50%',
+        display: 'inline-block',
+        margin: '10px',
+        backgroundColor: 'white',
+    };
+
+    if (color === 'red') {
+        ballStyle.backgroundColor = 'red';
+    } else if (color === 'blue') {
+        ballStyle.backgroundColor = 'blue';
+    } else if (color === 'green') {
+        ballStyle.backgroundColor = 'green';
+    }
+
+    return <div style={ballStyle}></div>;
 }
+
 
 function ChatApp() {
     const [ws, setWs] = useState(null);
@@ -147,7 +163,6 @@ function ChatApp() {
 
     return (
         <div>
-            <h1>Chat App</h1>
             <div>
                 Current session: {clientId}
             </div>
@@ -161,8 +176,8 @@ function ChatApp() {
             ))}
             {game.balls && game.balls.length ? (
                 <>
-                    {game.balls.map((ball) => (
-                        <Ball key={ball} color={ball} />
+                    {game.balls.map((ball, idx) => (
+                        <Ball key={idx} color={ball} />
                     ))}
                 </>
             ) : (
