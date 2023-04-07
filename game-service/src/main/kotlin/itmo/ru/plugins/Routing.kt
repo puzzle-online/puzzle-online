@@ -131,7 +131,7 @@ fun Application.configureRouting() {
                         }
 
                         Method.PLAY -> {
-                            val setRequest = converter?.deserialize<SetRequest>(frame)!!
+                            val setRequest = converter?.deserialize<PlayRequest>(frame)!!
 
                             val game = setRequest.toGame()
                             val ball = setRequest.toBall()
