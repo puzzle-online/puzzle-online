@@ -8,15 +8,14 @@ import io.ktor.server.websocket.*
 import itmo.ru.puzzle.dto.response.toConnectResponse
 import itmo.ru.puzzle.dto.response.toCreateResponse
 import itmo.ru.puzzle.dto.response.toJoinResponse
-import itmo.ru.puzzle.dto.response.toUpdateResponse
 import itmo.ru.puzzle.domain.model.*
 import itmo.ru.puzzle.dto.request.*
-import kotlinx.coroutines.launch
+import itmo.ru.puzzle.dto.response.toUpdateResponse
+import kotlinx.coroutines.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.schedule
 
 
 // TODO: make client game message entities
@@ -70,20 +69,6 @@ fun Application.configureRouting() {
         val connections = Collections.synchronizedMap<ClientId, Connection?>(mutableMapOf())
 
         webSocket("/chat") {
-
-            val timer = Timer().schedule(5000, 5000) {
-                gameMap.values.forEach { game ->
-                    game.clients.forEach { client ->
-                        launch {
-                            this@configureRouting.log.info("Sending game update to ${client.id} for game ${game.id}")
-                            connections[client.id]?.session?.sendSerialized(game.toUpdateResponse())
-                        }
-                    }
-                }
-            }
-
-            timer.run()
-
             val clientId = ClientId(getUUID())
             val client = Client(clientId)
             userMap[clientId] = client
@@ -91,10 +76,20 @@ fun Application.configureRouting() {
             val connection = Connection(this)
             connections[clientId] = connection
 
+//            val timer = Timer().schedule(5000, 5000) {
+//                gameMap[client.gameId]?.let { game ->
+//                    launch {
+//                        this@configureRouting.log.info("Sending game update to ${client.id} for game ${game.id}")
+//                        connections[client.id]?.session?.sendSerialized(game.toUpdateResponse())
+//                    }
+//                }
+//            }
+//            timer.run()
+
             try {
                 sendSerialized(client.toConnectResponse())
 
-                this@configureRouting.log.info("All clients connected: ${userMap.map { it.key }}")
+                this@configureRouting.log.info("Clients connected on in: ${userMap.map { it.key }}")
 
                 for (frame in incoming) {
                     val data = converter?.deserialize<Response>(frame)!!
@@ -109,16 +104,32 @@ fun Application.configureRouting() {
                                 }
                             )
 
+                            game.updateJob = CoroutineScope(Dispatchers.Default).launch {
+                                while (isActive) {
+                                    game.clients.forEach { client ->
+                                        connections[client.id]?.session?.sendSerialized(game.toUpdateResponse())
+                                    }
+                                    delay(5000)
+                                }
+                            }
+
                             gameMap[gameId] = game
 
                             sendSerialized(game.toCreateResponse())
                         }
 
+                        // TODO: on join unsubscribe from previous game
                         Method.JOIN -> {
                             val joinRequest = converter?.deserialize<JoinRequest>(frame)!!
 
                             val user = joinRequest.toClient()
                             val game = joinRequest.toGame()
+
+                            // TODO: handle exceptions
+                            if (!gameMap.containsKey(game.id)) {
+                                this@configureRouting.log.error("Game ${game.id} not found")
+                                return@webSocket
+                            }
 
                             userMap[user.id]?.let { gameMap[game.id]!!.clients.add(it) }
 
@@ -154,7 +165,8 @@ fun Application.configureRouting() {
             } finally {
                 connections.remove(clientId)
                 userMap.remove(clientId)
-                timer.cancel()
+
+                this@configureRouting.log.info("Clients connected on out: ${userMap.map { it.key }}")
 
                 gameMap.values.forEach { game ->
                     game.clients.remove(client)
