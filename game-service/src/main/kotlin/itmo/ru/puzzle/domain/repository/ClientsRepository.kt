@@ -1,4 +1,7 @@
-package itmo.ru.data.client
+package itmo.ru.puzzle.domain.repository
+
+import itmo.ru.puzzle.domain.model.Client
+import itmo.ru.puzzle.domain.model.ClientId
 
 class ClientsRepository {
     private val client = mutableMapOf<ClientId, Client>()

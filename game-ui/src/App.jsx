@@ -1,6 +1,5 @@
 import {useEffect, useState} from 'react'
 import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 import React from 'react';
@@ -29,11 +28,11 @@ function Ball({ color }) {
 
 function ChatApp() {
     const [ws, setWs] = useState(null);
-    const [messageText, setMessageText] = useState('');
-    const [gameJoinInput, setGameJoinInput] = useState('');
-    const [messages, setMessages] = useState([]);
     const [clientId, setClientId] = useState('');
-    const [game, setGame] = useState({});
+    const [gameId, setGameId] = useState('');
+    const [balls, setBalls] = useState([]);
+    const [clientList, setClientList] = useState([]);
+    const [gameJoinInput, setGameJoinInput] = useState('');
     const [playBallIdRed, setPlayBallIdRed] = useState('');
     const [playBallIdBlue, setPlayBallIdBlue] = useState('');
     const [playBallIdGreen, setPlayBallIdGreen] = useState('');
@@ -42,36 +41,53 @@ function ChatApp() {
         connect();
     }, []);
 
+    const handleConnect = (response) => {
+        setClientId(response.clientId);
+        console.log(`Connected with client ID: ${response.clientId}`);
+    };
+
+    const handleCreate = (response) => {
+        setGameId(response.gameId);
+        console.log(`Created game: ${response.gameId}`);
+    };
+
+    const handleJoin = (response) => {
+        setGameId(response.gameId);
+        setBalls(response.balls);
+        setClientList(response.clientIds);
+        console.log(`Joined game: ${response.gameId}, balls: ${response.balls}, clients: ${response.clientIds}`);
+    };
+
+    const handleUpdate = (response) => {
+        setBalls(response.balls);
+        setClientList(response.clientIds);
+        console.log(`Updated game: ${gameId}, balls: ${response.balls}, clients: ${response.clientIds}`);
+    };
+
+    const handleUnknown = (response) => {
+        console.log('Unknown message received:', response);
+    };
+
+    const handleIncomingMessage = (event) => {
+        const response = JSON.parse(event.data);
+        console.log('Received message:', response);
+        const handlers = {
+            connect: handleConnect,
+            create: handleCreate,
+            join: handleJoin,
+            update: handleUpdate,
+        };
+        const handler = handlers[response.method] || handleUnknown;
+        handler(response);
+    };
+
     const connect = () => {
         const newWs = new WebSocket('ws://localhost:3000/chat');
         console.log('WebSocket connecting...');
         newWs.onopen = () => {
             console.log('WebSocket connected');
         };
-        newWs.onmessage = (event) => {
-            const response = JSON.parse(event.data);
-            console.log('WebSocket message received:', response);
-            if (response.method === 'connect') {
-                setClientId(response.clientId);
-            } else if (response.method === 'create') {
-                setGame(response.game);
-            } else if (response.method === 'chat') {
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    `${response.message.sender}: ${response.message.content}`,
-                ]);
-            } else if (response.method === 'join') {
-                setGame(response.game);
-                console.log('Joined game', JSON.stringify(game, null, 2));
-            } else if (response.method === 'update') {
-                setGame(response.game);
-            } else {
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    "Unknown message: " + JSON.stringify(response, null, 2),
-                ]);
-            }
-        };
+        newWs.onmessage = handleIncomingMessage;
         newWs.onclose = () => {
             console.log('WebSocket disconnected');
             connect();
@@ -79,87 +95,27 @@ function ChatApp() {
         setWs(newWs);
     };
 
-    const sendMessage = (e) => {
+    const sendRequest = (method, data) => (e) => {
         e.preventDefault();
-        if (!messageText) {
-            return;
-        }
-        ws.send(
-            JSON.stringify({
-                method: 'chat',
-                sender: 'Client',
-                content: messageText,
-                timestamp: new Date().toLocaleTimeString(),
-            })
-        );
-        setMessageText('');
+        ws.send(JSON.stringify({
+            method: method,
+            clientId: clientId,
+            ...data,
+        }));
     };
 
-    const createGame = (e) => {
-        e.preventDefault();
-        ws.send(
-            JSON.stringify({
-                method: 'create',
-                clientId: clientId,
-            })
-        );
-    };
-
-    const joinGame = (e) => {
-        e.preventDefault();
-        ws.send(
-            JSON.stringify({
-                method: 'join',
-                clientId: clientId,
-                gameId: gameJoinInput,
-            })
-        );
-    };
-
-    const playRed = (e) => {
-        e.preventDefault();
-        ws.send(
-            JSON.stringify({
-                method: 'play',
-                clientId: clientId,
-                gameId: game.gameId,
-                ball: {
-                    ballId: parseInt(playBallIdRed),
-                    color: 'red',
-                },
-            })
-        );
-    };
-
-    const playBlue = (e) => {
-        e.preventDefault();
-        ws.send(
-            JSON.stringify({
-                method: 'play',
-                clientId: clientId,
-                gameId: game.gameId,
-                ball: {
-                    ballId: parseInt(playBallIdBlue),
-                    color: 'blue',
-                },
-            })
-        );
-    };
-
-    const playGreen = (e) => {
-        e.preventDefault();
-        ws.send(
-            JSON.stringify({
-                method: 'play',
-                clientId: clientId,
-                gameId: game.gameId,
-                ball: {
-                    ballId: parseInt(playBallIdGreen),
-                    color: 'green',
-                },
-            })
-        );
-    };
+    const createGame = sendRequest('create', {});
+    const joinGame = sendRequest('join', { gameId: gameJoinInput });
+    const playBall = (color) => sendRequest('play', {
+        gameId: gameId,
+        ball: {
+            ballId: parseInt(color === 'red' ? playBallIdRed : color === 'blue' ? playBallIdBlue : playBallIdGreen),
+            color: color,
+        },
+    });
+    const playRed = playBall('red');
+    const playBlue = playBall('blue');
+    const playGreen = playBall('green');
 
     return (
         <div>
@@ -167,26 +123,20 @@ function ChatApp() {
                 Current session: {clientId}
             </div>
             <div>
-                Current game ID: {game.gameId}, players: {game.clients}
+                Current game ID: {gameId}
             </div>
-            {messages.map((message, index) => (
-                <div key={index}>
-                    {message}
-                </div>
-            ))}
-            {game.balls && game.balls.length ? (
+            <div>
+                Current clients: {clientList.join(', ')}
+            </div>
+            {balls && balls.length ? (
                 <>
-                    {game.balls.map((ball, idx) => (
-                        <Ball key={idx} color={ball} />
+                    {balls.map((ball) => (
+                        <Ball key={ball.ballId} color={ball.color} />
                     ))}
                 </>
             ) : (
                 <p>No balls yet</p>
             )}
-            <form onSubmit={sendMessage}>
-                <input value={messageText} onChange={(e) => setMessageText(e.target.value)} type="text" placeholder="Type your message here" />
-                <button type="submit">Send</button>
-            </form>
             <form onSubmit={createGame}>
                 <button type="submit">Create Game</button>
             </form>
@@ -222,9 +172,6 @@ function App() {
     return (
         <div className="App">
             <div>
-                <a href="https://vitejs.dev" target="_blank">
-                    <img src={viteLogo} className="logo" alt="Vite logo"/>
-                </a>
                 <a href="https://reactjs.org" target="_blank">
                     <img src={reactLogo} className="logo react" alt="React logo"/>
                 </a>
