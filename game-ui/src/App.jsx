@@ -61,7 +61,7 @@ function ChatApp() {
     const handleUpdate = (response) => {
         setBalls(response.balls);
         setClientList(response.clientIds);
-        console.log(`Updated game: ${response.gameId}, balls: ${response.balls}, clients: ${response.clientIds}`);
+        console.log(`Updated game: ${gameId}, balls: ${response.balls}, clients: ${response.clientIds}`);
     };
 
     const handleUnknown = (response) => {
