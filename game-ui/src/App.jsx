@@ -1,8 +1,8 @@
 import {useEffect, useState} from 'react'
-import reactLogo from './assets/react.svg'
 import './App.css'
 
 import React from 'react';
+import HomePage from "./components/pages/HomePage.jsx";
 
 function Ball({ color }) {
     const ballStyle = {
@@ -163,19 +163,14 @@ function ChatApp() {
 
 function HelloWorld() {
     return <>
-        <h1>Chat App</h1>
-        <ChatApp/>
+        {/*<ChatApp/>*/}
+        <HomePage/>
     </>;
 }
 
 function App() {
     return (
         <div className="App">
-            <div>
-                <a href="https://reactjs.org" target="_blank">
-                    <img src={reactLogo} className="logo react" alt="React logo"/>
-                </a>
-            </div>
             <HelloWorld/>
         </div>
     )
