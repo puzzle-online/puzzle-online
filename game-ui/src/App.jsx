@@ -3,6 +3,8 @@ import './App.css'
 
 import React from 'react';
 import HomePage from "./components/pages/HomePage.jsx";
+import {Header} from "./components/Header.jsx";
+import RoomsPage from "./components/pages/RoomsPage.jsx";
 
 function Ball({ color }) {
     const ballStyle = {
@@ -163,8 +165,10 @@ function ChatApp() {
 
 function HelloWorld() {
     return <>
+        <Header/>
         {/*<ChatApp/>*/}
-        <HomePage/>
+        {/*<HomePage/>*/}
+        <RoomsPage/>
     </>;
 }
 

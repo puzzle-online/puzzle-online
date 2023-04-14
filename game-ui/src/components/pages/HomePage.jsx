@@ -4,13 +4,11 @@ import reactLogo from "../../assets/teamwork.png";
 import Person from "@mui/icons-material/Person";
 import PlayArrow from "@mui/icons-material/PlayArrow";
 import Home from "@mui/icons-material/Home";
+import {Header} from "../Header.jsx";
 
 function HomePage() {
     return (
         <div>
-            <Typography level="display1" color="textPrimary" className="font">
-                JIGZLE
-            </Typography>
             <a href="https://reactjs.org" target="_blank">
                 <img src={reactLogo} className="logo react" alt="React logo"/>
             </a>
