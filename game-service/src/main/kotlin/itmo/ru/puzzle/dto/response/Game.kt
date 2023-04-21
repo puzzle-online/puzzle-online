@@ -10,9 +10,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CreateResponse(
     val gameId: String,
+    val balls: List<BallResponse>,
+    val clientIds: List<String>,
 ) : Response(Method.CREATE)
 
-fun Game.toCreateResponse() = CreateResponse(id.value)
+fun Game.toCreateResponse() = CreateResponse(id.value, balls.toResponse(), clients.getIds())
 
 private fun MutableList<Ball>.toResponse() = this.map { it.toResponse() }.toList()
 

@@ -101,7 +101,8 @@ fun Application.configureRouting() {
                                 gameId,
                                 MutableList(10) {
                                     Ball(BallId(it), Color.values().random())
-                                }
+                                },
+                                mutableSetOf(client)
                             )
 
                             game.updateJob = CoroutineScope(Dispatchers.Default).launch {
