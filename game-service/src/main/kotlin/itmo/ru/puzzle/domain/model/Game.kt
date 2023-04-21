@@ -1,6 +1,7 @@
 package itmo.ru.puzzle.domain.model
 
 import kotlinx.coroutines.Job
+import java.util.*
 
 @JvmInline
 value class GameId(val value: String)
@@ -11,4 +12,5 @@ data class Game(
     val clients: MutableSet<Client> = mutableSetOf(),
 ) {
     lateinit var updateJob: Job
+    lateinit var deleteGameActionTimer: TimerTask
 }

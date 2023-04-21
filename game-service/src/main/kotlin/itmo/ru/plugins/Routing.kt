@@ -13,12 +13,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.schedule
 
 
 // TODO: make client game message entities
-// TODO: remove serializable message and ball / separate file into domain
 // TODO: set repos in same package
 
+// TODO: divide into request and response
 @Serializable
 enum class Method {
     @SerialName("connect")
@@ -114,6 +115,12 @@ fun Application.configureRouting() {
                                 }
                             }
 
+                            // TODO: think about time
+                            game.deleteGameActionTimer = Timer().schedule(6000) {
+                                game.updateJob.cancel()
+                                gameMap.remove(gameId)
+                            }
+
                             gameMap[gameId] = game
 
                             sendSerialized(game.toCreateResponse())
@@ -132,7 +139,10 @@ fun Application.configureRouting() {
                                 return@webSocket
                             }
 
-                            userMap[user.id]?.let { gameMap[game.id]!!.clients.add(it) }
+                            userMap[user.id]?.let {
+                                gameMap[game.id]!!.deleteGameActionTimer.cancel()
+                                gameMap[game.id]!!.clients.add(it)
+                            }
 
                             connections.forEach { (clientId, connection) ->
                                 if (gameMap[game.id]!!.clients.contains(userMap[clientId]!!)) {
@@ -176,6 +186,9 @@ fun Application.configureRouting() {
 
                 gameMap.values.forEach { game ->
                     game.clients.remove(client)
+                    if (game.clients.isEmpty()) {
+                        game.deleteGameActionTimer.run()
+                    }
                 }
             }
         }
