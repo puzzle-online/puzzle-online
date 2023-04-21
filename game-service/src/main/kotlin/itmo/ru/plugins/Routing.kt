@@ -157,8 +157,8 @@ fun Application.configureRouting() {
                         }
 
                         Method.ROOMS -> {
-                            val rooms = gameMap.values.map { it.toGetRoomsResponse() }
-                            sendSerialized(rooms)
+                            val rooms = gameMap.values.map { it.toGetGameDescriptionResponse() }.toList()
+                            sendSerialized(GetGamesResponse(rooms))
                         }
 
                         else -> {
