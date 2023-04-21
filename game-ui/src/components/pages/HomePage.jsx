@@ -34,7 +34,7 @@ function HomePage({onRoomsButtonClick}) {
                     alignItems="center"
                     spacing={2}
                 >
-                    <Button variant="solid" sx={{width: "100%"}}>
+                    <Button variant="solid" sx={{width: "100%"}} onClick={onRoomsButtonClick}>
                         <Home/>
                         <Typography color="textPrimary" sx={{width: "100%"}}>
                             ROOMS

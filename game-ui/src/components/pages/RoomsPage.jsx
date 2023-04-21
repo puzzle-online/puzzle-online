@@ -42,7 +42,7 @@ function Options() {
     );
 }
 
-function TopBar() {
+function TopBar({onBackButtonClick}) {
     // return (
     //     <Stack
     //         direction="row"
@@ -88,7 +88,7 @@ function TopBar() {
                     alignItems="center"
                     spacing={2}
                 >
-                    <IconButton>
+                    <IconButton onClick={onBackButtonClick}>
                         <ArrowBack/>
                     </IconButton>
                     <Input
@@ -129,8 +129,8 @@ function Rooms() {
             alignItems="center" // center the items vertically
             // sx={{ flexGrow: 1 }}
         >
-            {Array.from(Array(6)).map((_, index) => (
-                <Grid xs={2} sm={4} md={4} key={index}>
+            {Array.from(Array(5)).map((_, index) => (
+                <Grid key={index}>
                     <Card variant="outlined" sx={{ width: 300 }}>
                         <AspectRatio>
                             <div>
@@ -187,7 +187,7 @@ function Rooms() {
     // );
 }
 
-function Actions() {
+function Actions({onPlayButtonClick}) {
     return (
         <Stack
             direction="row"
@@ -196,7 +196,7 @@ function Actions() {
             spacing={2}
         >
             <Button startDecorator={<Home/>}>New Room</Button>
-            <Button startDecorator={<PlayArrow/>}>Play</Button>
+            <Button startDecorator={<PlayArrow/>} onClick={onPlayButtonClick}>Play</Button>
         </Stack>
     )
 }
@@ -209,9 +209,9 @@ function RoomsPage({onBackButtonClick, onPlayButtonClick}) {
             alignItems="center"
             spacing={2}
         >
-            <TopBar/>
+            <TopBar onBackButtonClick={onBackButtonClick}/>
             <Rooms/>
-            <Actions/>
+            <Actions onPlayButtonClick={onPlayButtonClick}/>
         </Stack>
     )
 }
