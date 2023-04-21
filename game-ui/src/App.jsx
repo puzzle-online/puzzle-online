@@ -39,6 +39,7 @@ function ChatApp() {
     const [playBallIdRed, setPlayBallIdRed] = useState('');
     const [playBallIdBlue, setPlayBallIdBlue] = useState('');
     const [playBallIdGreen, setPlayBallIdGreen] = useState('');
+    const [rooms, setRooms] = useState([]);
 
     useEffect(() => {
         connect();
@@ -69,6 +70,11 @@ function ChatApp() {
         console.log(`Updated game: ${gameId}, balls: ${response.balls}, clients: ${response.clientIds}`);
     };
 
+    const handleRooms = (response) => {
+        setRooms(response.rooms);
+        console.log(`Rooms: ${response.rooms}`);
+    }
+
     const handleUnknown = (response) => {
         console.log('Unknown message received:', response);
     };
@@ -81,6 +87,7 @@ function ChatApp() {
             create: handleCreate,
             join: handleJoin,
             update: handleUpdate,
+            rooms: handleRooms,
         };
         const handler = handlers[response.method] || handleUnknown;
         handler(response);
@@ -121,6 +128,7 @@ function ChatApp() {
     const playRed = playBall('red');
     const playBlue = playBall('blue');
     const playGreen = playBall('green');
+    const roomsRequest = sendRequest('rooms', {});
 
     return (
         <div>
@@ -132,6 +140,16 @@ function ChatApp() {
             </div>
             <div>
                 Current clients: {clientList.join(', ')}
+            </div>
+            <form onSubmit={roomsRequest}>
+                <button type="submit">Get Rooms</button>
+            </form>
+            <div>
+                Current rooms: {rooms.map((room) => (
+                    <div>
+                        Room {room.name} with {room.description} players
+                    </div>
+                ))}
             </div>
             {balls && balls.length ? (
                 <>
@@ -193,7 +211,7 @@ function App() {
         <div className="App">
             <Header/>
             <ChatApp/>
-            {/*<Pages/>*/}
+            <Pages/>
         </div>
     )
 }
