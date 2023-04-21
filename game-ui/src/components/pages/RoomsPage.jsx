@@ -1,4 +1,4 @@
-import React, {Fragment} from "react";
+import React, {useEffect, useRef, useState} from "react";
 
 import PlayArrow from "@mui/icons-material/PlayArrow";
 import Home from "@mui/icons-material/Home";
@@ -12,12 +12,8 @@ import Typography from "@mui/joy/Typography";
 import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Card from "@mui/joy/Card";
-import CardOverflow from "@mui/joy/CardOverflow";
 import IconButton from "@mui/joy/IconButton";
 import Grid from "@mui/joy/Grid";
-import Sheet from "@mui/joy/Sheet";
-import CardContent from "@mui/joy/CardContent";
-// import CardMedia from '@mui/joy/CardMedia';
 import AspectRatio from '@mui/joy/AspectRatio';
 
 function PageTitle({children}) {
@@ -33,7 +29,7 @@ function PageTitle({children}) {
 
 function Options() {
     return (
-        // boxShadow: 'none'
+        // TODO: boxShadow: 'none'
         <Select placeholder="Difficulty">
             <Option>Easy</Option>
             <Option>Medium</Option>
@@ -43,38 +39,6 @@ function Options() {
 }
 
 function TopBar({onBackButtonClick}) {
-    // return (
-    //     <Stack
-    //         direction="row"
-    //         justifyContent="space-between"
-    //         alignItems="center"
-    //         spacing={2}
-    //         sx={{width: 1000}}
-    //     >
-    //         {/*    content: [[back-button] [searchbar]][ROOMS][difficulty]*/}
-    //         <Stack
-    //             direction="row"
-    //             justifyContent="space-between"
-    //             alignItems="center"
-    //             spacing={2}
-    //             sx={{ width: 200 }}
-    //         >
-    //             <IconButton>
-    //                 <ArrowBack/>
-    //             </IconButton>
-    //             <Input
-    //                 startDecorator={<Search/>}
-    //                 placeholder="Search"
-    //                 />
-    //         </Stack>
-    //         <PageTitle>
-    //             ROOMS
-    //         </PageTitle>
-    //         <Options
-    //             sx={{ width: 300}}
-    //         />
-    //     </Stack>
-    // );
     return (
         <Grid container
               spacing={2}
@@ -91,6 +55,7 @@ function TopBar({onBackButtonClick}) {
                     <IconButton onClick={onBackButtonClick}>
                         <ArrowBack/>
                     </IconButton>
+                    {/*TODO: add refresh button*/}
                     <Input
                         startDecorator={<Search/>}
                         placeholder="Search"
@@ -109,85 +74,50 @@ function TopBar({onBackButtonClick}) {
     );
 }
 
-function Rooms() {
-    // const gridItems = Array.from({ length: 6 }).map(() => (
-    //     <Grid item xs={12} sm={6} md={4} key={Math.random()}>
-    //         <Card variant="solid">
-    //             <CardOverflow>
-    //                 <img src="https://thecatapi.com/api/images/get?format=src&type=gif" alt="A random cat" />
-    //             </CardOverflow>
-    //         </Card>
-    //     </Grid>
-    // ));
-
+function Rooms({rooms, selectedGameId}) {
+    const [selectedIndex, setSelectedIndex] = useState(0);
     return (
         <Grid
             container
             spacing={2}
             columns={2}
-            justifyContent="center" // center the items horizontally
-            alignItems="center" // center the items vertically
-            // sx={{ flexGrow: 1 }}
+            justifyContent="center"
+            alignItems="center"
         >
-            {Array.from(Array(5)).map((_, index) => (
+            {rooms.map((room, index) => (
                 <Grid key={index}>
-                    <Card variant="outlined" sx={{ width: 300 }}>
+                    <Card
+                        variant="solid"
+                        color={selectedIndex === index ? "primary" : "default"}
+                        sx={{width: 300}}
+                        onClick={() => {
+                            selectedGameId.current = room.gameId;
+                            setSelectedIndex(index);
+                        }}
+                        // TODO: make proper hover and selected states
+                    >
                         <AspectRatio>
                             <div>
                                 <img src={"https://thecatapi.com/api/images/get?format=src&type=gif&id=" + index}
                                      alt="A random cat"/>
                             </div>
                         </AspectRatio>
-                        <Typography mt={2}>Title</Typography>
-                        <Typography level="body2">Description of the card.</Typography>
+                        {/*TODO: fix text coloring*/}
+                        <Typography
+                            mt={2}
+                        >{room.gameId.substring(0, 10)}...</Typography>
+                        <Typography
+                            level="body2"
+                            color={selectedIndex === index ? "textPrimary" : "neutral"}
+                        >Players: {room.clientAmount}</Typography>
                     </Card>
                 </Grid>
             ))}
         </Grid>
     );
-    // return (
-    //     <Grid container spacing={3} style={{ backgroundColor: 'gray' }} direction="row" justifyContent="space-between" alignItems="center">
-    //         <Grid xs={12}>
-    //             <Card
-    //                 variant="solid"
-    //             >
-    //                 <CardOverflow>
-    //                     <img id="photo" src="https://thecatapi.com/api/images/get?format=src&type=gif" alt=""/>
-    //                 </CardOverflow>
-    //             </Card>
-    //         </Grid>
-    //         <Grid xs={12}>
-    //             <Card
-    //                 variant="solid"
-    //             >
-    //                 <CardOverflow>
-    //                     <img id="photo" src="https://thecatapi.com/api/images/get?format=src&type=gif" alt=""/>
-    //                 </CardOverflow>
-    //             </Card>
-    //         </Grid>
-    //     </Grid>
-    // );
-    // return (
-    //     <Sheet color="neutral" variant="soft" sx={{ width: 1000, height: 500 }}>
-    //         <Card
-    //             variant="solid"
-    //         >
-    //             <CardOverflow>
-    //                 <img id="photo" src="https://thecatapi.com/api/images/get?format=src&type=gif" alt=""/>
-    //             </CardOverflow>
-    //         </Card>
-    //         <Card
-    //             variant="solid"
-    //         >
-    //             <CardOverflow>
-    //                 <img id="photo" src="https://thecatapi.com/api/images/get?format=src&type=gif" alt=""/>
-    //             </CardOverflow>
-    //         </Card>
-    //     </Sheet>
-    // );
 }
 
-function Actions({onPlayButtonClick}) {
+function Actions({selectedGameId, onJoinButtonClick, onCreateButtonClick}) {
     return (
         <Stack
             direction="row"
@@ -195,8 +125,8 @@ function Actions({onPlayButtonClick}) {
             alignItems="center"
             spacing={2}
         >
-            <Button startDecorator={<Home/>}>New Room</Button>
-            <Button startDecorator={<PlayArrow/>} onClick={onPlayButtonClick}>Play</Button>
+            <Button startDecorator={<Home/>} onClick={onCreateButtonClick}>New Room</Button>
+            <Button startDecorator={<PlayArrow/>} onClick={() => onJoinButtonClick(selectedGameId.current)}>Join</Button>
         </Stack>
     )
 }
