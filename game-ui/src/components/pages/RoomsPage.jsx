@@ -131,7 +131,22 @@ function Actions({selectedGameId, onJoinButtonClick, onCreateButtonClick}) {
     )
 }
 
-function RoomsPage({onBackButtonClick, onPlayButtonClick}) {
+function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick, onCreateButtonClick}) {
+    const selectedGameId = useRef(null);
+    const [rooms, setRooms] = useState([]);
+
+    // TODO: save event handlers if ws socket loss occurs and add all listeners on ws socket open
+    useEffect(() => {
+        sendRequest('rooms', {});
+        handlers['rooms'] = handleRooms;
+        console.log('added handleRooms');
+    }, []);
+
+    const handleRooms = (response) => {
+        setRooms(response.rooms);
+        console.log(`Rooms: ${response.rooms}`);
+    }
+
     return (
         <Stack
             direction="column"
@@ -140,8 +155,8 @@ function RoomsPage({onBackButtonClick, onPlayButtonClick}) {
             spacing={2}
         >
             <TopBar onBackButtonClick={onBackButtonClick}/>
-            <Rooms/>
-            <Actions onPlayButtonClick={onPlayButtonClick}/>
+            <Rooms rooms={rooms} selectedGameId={selectedGameId}/>
+            <Actions selectedGameId={selectedGameId} onJoinButtonClick={onJoinButtonClick} onCreateButtonClick={onCreateButtonClick}/>
         </Stack>
     )
 }
