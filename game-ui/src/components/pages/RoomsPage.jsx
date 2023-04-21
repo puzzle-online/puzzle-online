@@ -123,16 +123,19 @@ function Rooms() {
     return (
         <Grid
             container
-            spacing={{ xs: 2, md: 2 }}
-            columns={{ xs: 2, sm: 2, md: 12 }}
-            sx={{ flexGrow: 1 }}
+            spacing={2}
+            columns={2}
+            justifyContent="center" // center the items horizontally
+            alignItems="center" // center the items vertically
+            // sx={{ flexGrow: 1 }}
         >
             {Array.from(Array(6)).map((_, index) => (
                 <Grid xs={2} sm={4} md={4} key={index}>
                     <Card variant="outlined" sx={{ width: 300 }}>
                         <AspectRatio>
                             <div>
-                                <img src="https://thecatapi.com/api/images/get?format=src&type=gif" alt="A random cat" />
+                                <img src={"https://thecatapi.com/api/images/get?format=src&type=gif&id=" + index}
+                                     alt="A random cat"/>
                             </div>
                         </AspectRatio>
                         <Typography mt={2}>Title</Typography>
@@ -198,9 +201,8 @@ function Actions() {
     )
 }
 
-function RoomPage() {
+function RoomsPage({onBackButtonClick, onPlayButtonClick}) {
     return (
-
         <Stack
             direction="column"
             justifyContent="center"
@@ -214,4 +216,4 @@ function RoomPage() {
     )
 }
 
-export default RoomPage;
+export default RoomsPage;

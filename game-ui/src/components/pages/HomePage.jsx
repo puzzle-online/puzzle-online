@@ -6,7 +6,7 @@ import PlayArrow from "@mui/icons-material/PlayArrow";
 import Home from "@mui/icons-material/Home";
 import {Header} from "../Header.jsx";
 
-function HomePage() {
+function HomePage({onRoomsButtonClick}) {
     return (
         <div>
             <a href="https://reactjs.org" target="_blank">
@@ -40,7 +40,7 @@ function HomePage() {
                             ROOMS
                         </Typography>
                     </Button>
-                    <Button variant="solid" sx={{width: "100%"}}>
+                    <Button variant="solid" sx={{width: "100%"}} disabled>
                         <PlayArrow/>
                         <Typography color="textPrimary" sx={{width: "100%"}}>
                             PLAY

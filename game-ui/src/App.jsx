@@ -5,6 +5,7 @@ import React from 'react';
 import HomePage from "./components/pages/HomePage.jsx";
 import {Header} from "./components/Header.jsx";
 import RoomsPage from "./components/pages/RoomsPage.jsx";
+import RoomPage from "./components/pages/RoomPage.jsx";
 
 function Ball({ color }) {
     const ballStyle = {
@@ -163,19 +164,34 @@ function ChatApp() {
 }
 
 
-function HelloWorld() {
+function Pages() {
+    const [page, setPage] = useState('home');
+
+    const handleRoomsButtonClick = () => {
+        setPage('rooms');
+    }
+
+    const handleBackButtonClick = () => {
+        setPage('home');
+    }
+
+    const handlePlayButtonClick = () => {
+        setPage('room');
+    }
+
     return <>
-        <Header/>
         {/*<ChatApp/>*/}
-        {/*<HomePage/>*/}
-        <RoomsPage/>
+        {page === 'home' && <HomePage onRoomsButtonClick={handleRoomsButtonClick}/>}
+        {page === 'rooms' && <RoomsPage onBackButtonClick={handleBackButtonClick} onPlayButtonClick={handlePlayButtonClick}/>}
+        {page === 'room' && <RoomPage onBackButtonClick={handleBackButtonClick}/>}
     </>;
 }
 
 function App() {
     return (
         <div className="App">
-            <HelloWorld/>
+            <Header/>
+            <Pages/>
         </div>
     )
 }
