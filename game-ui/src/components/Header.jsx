@@ -1,8 +1,10 @@
-import {Typography} from "@mui/joy";
+import Typography from "@mui/joy/Typography";
 import React from "react";
 
-export function Header() {
+function Header() {
     return <Typography level="display1" color="textPrimary">
         JIGZLE
     </Typography>;
 }
+
+export default Header;

@@ -4,7 +4,6 @@ import reactLogo from "../../assets/teamwork.png";
 import Person from "@mui/icons-material/Person";
 import PlayArrow from "@mui/icons-material/PlayArrow";
 import Home from "@mui/icons-material/Home";
-import {Header} from "../Header.jsx";
 
 function HomePage({onRoomsButtonClick}) {
     return (
