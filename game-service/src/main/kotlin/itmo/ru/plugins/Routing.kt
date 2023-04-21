@@ -5,12 +5,9 @@ import io.ktor.serialization.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
-import itmo.ru.puzzle.dto.response.toConnectResponse
-import itmo.ru.puzzle.dto.response.toCreateResponse
-import itmo.ru.puzzle.dto.response.toJoinResponse
 import itmo.ru.puzzle.domain.model.*
 import itmo.ru.puzzle.dto.request.*
-import itmo.ru.puzzle.dto.response.toUpdateResponse
+import itmo.ru.puzzle.dto.response.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -37,7 +34,10 @@ enum class Method {
     PLAY,
 
     @SerialName("update")
-    UPDATE;
+    UPDATE,
+
+    @SerialName("rooms")
+    ROOMS;
 
     override fun toString() = name.lowercase(Locale.getDefault())
 }
@@ -154,6 +154,11 @@ fun Application.configureRouting() {
 
                             // TODO: refactor .value call
                             gameMap[game.id]!!.balls[ball.id.value].color = ball.color
+                        }
+
+                        Method.ROOMS -> {
+                            val rooms = gameMap.values.map { it.toGetRoomsResponse() }
+                            sendSerialized(rooms)
                         }
 
                         else -> {

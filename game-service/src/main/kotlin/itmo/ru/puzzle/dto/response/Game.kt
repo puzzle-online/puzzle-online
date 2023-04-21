@@ -28,6 +28,14 @@ data class JoinResponse(
 fun Game.toJoinResponse() = JoinResponse(id.value, balls.toResponse(), clients.getIds())
 
 @Serializable
+data class GetRoomsResponse(
+    val gameId: String,
+    val clientAmount: Int,
+) : Response(Method.PLAY)
+
+fun Game.toGetRoomsResponse() = GetRoomsResponse(id.value, clients.size)
+
+@Serializable
 data class UpdateResponse(
     val balls: List<BallResponse>,
     val clientIds: List<String>,
