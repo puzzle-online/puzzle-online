@@ -147,7 +147,7 @@ function ChatApp() {
             <div>
                 Current rooms: {rooms.map((room) => (
                     <div>
-                        Room {room.name} with {room.description} players
+                        Room {room.gameId} with {room.clientAmount} players
                     </div>
                 ))}
             </div>
