@@ -51,7 +51,9 @@ function ChatApp() {
 
     const handleCreate = (response) => {
         setGameId(response.gameId);
-        console.log(`Created game: ${response.gameId}`);
+        setBalls(response.balls);
+        setClientList(response.clientIds);
+        console.log(`Created game: ${response.gameId}, balls: ${response.balls}, clients: ${response.clientIds}`);
     };
 
     const handleJoin = (response) => {
@@ -180,7 +182,6 @@ function Pages() {
     }
 
     return <>
-        {/*<ChatApp/>*/}
         {page === 'home' && <HomePage onRoomsButtonClick={handleRoomsButtonClick}/>}
         {page === 'rooms' && <RoomsPage onBackButtonClick={handleBackButtonClick} onPlayButtonClick={handlePlayButtonClick}/>}
         {page === 'room' && <RoomPage onBackButtonClick={handleBackButtonClick}/>}
@@ -191,7 +192,8 @@ function App() {
     return (
         <div className="App">
             <Header/>
-            <Pages/>
+            <ChatApp/>
+            {/*<Pages/>*/}
         </div>
     )
 }
