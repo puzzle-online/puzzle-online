@@ -12,5 +12,5 @@ data class Game(
     val clients: MutableSet<Client> = mutableSetOf(),
 ) {
     lateinit var updateJob: Job
-    lateinit var deleteGameActionTimer: TimerTask
+    lateinit var deleteGameAction: TimerTask
 }

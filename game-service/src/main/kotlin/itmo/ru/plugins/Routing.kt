@@ -14,6 +14,7 @@ import kotlinx.serialization.Serializable
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.schedule
+import kotlin.concurrent.timerTask
 
 
 // TODO: make client game message entities
@@ -115,8 +116,7 @@ fun Application.configureRouting() {
                                 }
                             }
 
-                            // TODO: think about time
-                            game.deleteGameActionTimer = Timer().schedule(6000) {
+                            game.deleteGameAction = timerTask {
                                 game.updateJob.cancel()
                                 gameMap.remove(gameId)
                             }
@@ -140,7 +140,7 @@ fun Application.configureRouting() {
                             }
 
                             userMap[user.id]?.let {
-                                gameMap[game.id]!!.deleteGameActionTimer.cancel()
+                                gameMap[game.id]!!.deleteGameAction.cancel()
                                 gameMap[game.id]!!.clients.add(it)
                             }
 
@@ -161,6 +161,12 @@ fun Application.configureRouting() {
                             this@configureRouting.log.info(
                                 "Received set request for game ${game.id} and ball ${ball.id} with color ${ball.color} from client ${setRequest.toClient().id}"
                             )
+
+                            // TODO: handle exceptions
+                            if (!gameMap.containsKey(game.id)) {
+                                this@configureRouting.log.error("Game ${game.id} not found")
+                                return@webSocket
+                            }
 
                             // TODO: refactor .value call
                             gameMap[game.id]!!.balls[ball.id.value].color = ball.color
@@ -187,7 +193,9 @@ fun Application.configureRouting() {
                 gameMap.values.forEach { game ->
                     game.clients.remove(client)
                     if (game.clients.isEmpty()) {
-                        game.deleteGameActionTimer.run()
+                        Timer().schedule(5000) {
+                            game.deleteGameAction
+                        }
                     }
                 }
             }
