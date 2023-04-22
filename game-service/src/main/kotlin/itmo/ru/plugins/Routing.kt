@@ -14,7 +14,6 @@ import kotlinx.serialization.Serializable
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.schedule
-import kotlin.concurrent.timerTask
 
 
 // TODO: make client game message entities
@@ -116,11 +115,6 @@ fun Application.configureRouting() {
                                 }
                             }
 
-                            game.deleteGameAction = timerTask {
-                                game.updateJob.cancel()
-                                gameMap.remove(gameId)
-                            }
-
                             gameMap[gameId] = game
 
                             sendSerialized(game.toCreateResponse())
@@ -140,7 +134,7 @@ fun Application.configureRouting() {
                             }
 
                             userMap[user.id]?.let {
-                                gameMap[game.id]!!.deleteGameAction.cancel()
+                                gameMap[game.id]!!.deleteGameActionTimer.cancel()
                                 gameMap[game.id]!!.clients.add(it)
                             }
 
@@ -172,19 +166,21 @@ fun Application.configureRouting() {
                             gameMap[game.id]!!.balls[ball.id.value].color = ball.color
                         }
 
+                        // TODO: add leave game action
+
                         Method.ROOMS -> {
                             val rooms = gameMap.values.map { it.toGetGameDescriptionResponse() }.toList()
                             sendSerialized(GetGamesResponse(rooms))
                         }
 
-                        else -> {
-                            this@configureRouting.log.error("Unknown method")
-                        }
+                        else -> this@configureRouting.log.error("Unknown method ${data.method}")
                     }
                 }
             } catch (e: Exception) {
                 this@configureRouting.log.error("Error occurred in websocket", e)
             } finally {
+                this@configureRouting.log.info("Client $clientId disconnected")
+
                 connections.remove(clientId)
                 userMap.remove(clientId)
 
@@ -192,9 +188,19 @@ fun Application.configureRouting() {
 
                 gameMap.values.forEach { game ->
                     game.clients.remove(client)
+
+                    // TODO: fix game deletion
+
                     if (game.clients.isEmpty()) {
-                        Timer().schedule(5000) {
-                            game.deleteGameAction
+
+                        this@configureRouting.log.info("No clients for ${game.id}. Prepare to set timer...")
+
+                        game.deleteGameActionTimer.schedule(60000) {
+
+                            this@configureRouting.log.info("Performing delete game action for game ${game.id}")
+
+                            game.updateJob.cancel()
+                            gameMap.remove(game.id)
                         }
                     }
                 }
