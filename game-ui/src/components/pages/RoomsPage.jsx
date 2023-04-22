@@ -74,8 +74,7 @@ function TopBar({onBackButtonClick}) {
     );
 }
 
-function Rooms({rooms, selectedGameId}) {
-    const [selectedIndex, setSelectedIndex] = useState(0);
+function Rooms({rooms, selectedGameId, updateSelectedGameId}) {
     return (
         <Grid
             container
@@ -88,11 +87,10 @@ function Rooms({rooms, selectedGameId}) {
                 <Grid key={index}>
                     <Card
                         variant="solid"
-                        color={selectedIndex === index ? "primary" : "default"}
+                        color={(selectedGameId === room.gameId) ? "primary" : "default"}
                         sx={{width: 300}}
                         onClick={() => {
-                            selectedGameId.current = room.gameId;
-                            setSelectedIndex(index);
+                            updateSelectedGameId(room.gameId);
                         }}
                         // TODO: make proper hover and selected states
                     >
@@ -108,7 +106,7 @@ function Rooms({rooms, selectedGameId}) {
                         >{room.gameId.substring(0, 10)}...</Typography>
                         <Typography
                             level="body2"
-                            color={selectedIndex === index ? "textPrimary" : "neutral"}
+                            color={(selectedGameId === room.gameId) ? "textPrimary" : "neutral"}
                         >Players: {room.clientAmount}</Typography>
                     </Card>
                 </Grid>
@@ -126,13 +124,13 @@ function Actions({selectedGameId, onJoinButtonClick, onCreateButtonClick}) {
             spacing={2}
         >
             <Button startDecorator={<Home/>} onClick={onCreateButtonClick}>New Room</Button>
-            <Button startDecorator={<PlayArrow/>} onClick={() => onJoinButtonClick(selectedGameId.current)}>Join</Button>
+            <Button startDecorator={<PlayArrow/>} onClick={() => onJoinButtonClick(selectedGameId)} disabled={selectedGameId === ''}>Join</Button>
         </Stack>
     )
 }
 
 function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick, onCreateButtonClick}) {
-    const selectedGameId = useRef(null);
+    const [selectedGameId, setSelectedGameId] = useState('');
     const [rooms, setRooms] = useState([]);
 
     // TODO: save event handlers if ws socket loss occurs and add all listeners on ws socket open
@@ -155,7 +153,7 @@ function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick,
             spacing={2}
         >
             <TopBar onBackButtonClick={onBackButtonClick}/>
-            <Rooms rooms={rooms} selectedGameId={selectedGameId}/>
+            <Rooms rooms={rooms} selectedGameId={selectedGameId} updateSelectedGameId={setSelectedGameId}/>
             <Actions selectedGameId={selectedGameId} onJoinButtonClick={onJoinButtonClick} onCreateButtonClick={onCreateButtonClick}/>
         </Stack>
     )
