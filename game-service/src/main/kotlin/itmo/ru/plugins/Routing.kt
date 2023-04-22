@@ -6,6 +6,8 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import itmo.ru.puzzle.domain.model.*
+import itmo.ru.puzzle.domain.repository.ClientRepository
+import itmo.ru.puzzle.domain.repository.GameRepository
 import itmo.ru.puzzle.dto.request.*
 import itmo.ru.puzzle.dto.response.*
 import kotlinx.coroutines.*
@@ -38,7 +40,10 @@ enum class Method {
     UPDATE,
 
     @SerialName("rooms")
-    ROOMS;
+    ROOMS,
+
+    @SerialName("leave")
+    LEAVE;
 
     override fun toString() = name.lowercase(Locale.getDefault())
 }
@@ -53,8 +58,8 @@ open class Response(val method: Method)
 fun getUUID() = UUID.randomUUID().toString()
 
 
-val userMap = mutableMapOf<ClientId, Client>()
-val gameMap = mutableMapOf<GameId, Game>()
+//val userMap = mutableMapOf<ClientId, Client>()
+//val gameMap = mutableMapOf<GameId, Game>()
 
 class Connection(val session: WebSocketServerSession) {
     companion object {
@@ -68,19 +73,21 @@ class Connection(val session: WebSocketServerSession) {
 fun Application.configureRouting() {
     routing {
         val connections = Collections.synchronizedMap<ClientId, Connection?>(mutableMapOf())
+        val gameRepository = GameRepository()
+        val clientRepository = ClientRepository()
 
         webSocket("/chat") {
             val clientId = ClientId(getUUID())
-            val client = Client(clientId)
-            userMap[clientId] = client
+            val currentSessionClient = Client(clientId)
+            clientRepository.register(currentSessionClient)
 
             val connection = Connection(this)
             connections[clientId] = connection
 
             try {
-                sendSerialized(client.toConnectResponse())
+                sendSerialized(currentSessionClient.toConnectResponse())
 
-                this@configureRouting.log.info("Clients connected on in: ${userMap.map { it.key }}")
+                this@configureRouting.log.info("Clients connected on in: ${clientRepository.getAllClients()}")
 
                 for (frame in incoming) {
                     val data = converter?.deserialize<Response>(frame)!!
@@ -93,7 +100,7 @@ fun Application.configureRouting() {
                                 MutableList(10) {
                                     Ball(BallId(it), Color.values().random())
                                 },
-                                mutableSetOf(client)
+                                mutableSetOf(currentSessionClient)
                             )
 
                             game.updateJob = CoroutineScope(Dispatchers.Default).launch {
@@ -105,64 +112,106 @@ fun Application.configureRouting() {
                                 }
                             }
 
-                            gameMap[gameId] = game
+                            gameRepository.put(game)
 
                             sendSerialized(game.toCreateResponse())
                         }
 
                         // TODO: on join unsubscribe from previous game
+                        // TODO: don't send clientId in JoinRequest
                         Method.JOIN -> {
                             val joinRequest = converter?.deserialize<JoinRequest>(frame)!!
 
-                            val user = joinRequest.toClient()
-                            val game = joinRequest.toGame()
-
-                            // TODO: handle exceptions
-                            if (!gameMap.containsKey(game.id)) {
-                                this@configureRouting.log.error("Game ${game.id} not found")
+                            if (!gameRepository.contains(joinRequest.gameId)) {
+                                this@configureRouting.log.error("Game ${joinRequest.gameId} not found")
                                 return@webSocket
                             }
 
-                            userMap[user.id]?.let {
-                                if (gameMap[game.id]!!.clients.isEmpty()) {
-                                    gameMap[game.id]!!.deleteGameActionTimer.cancel()
-                                }
-                                gameMap[game.id]!!.clients.add(it)
+                            if (!clientRepository.contains(joinRequest.clientId)) {
+                                this@configureRouting.log.error("Client ${joinRequest.clientId} not found")
+                                return@webSocket
                             }
 
-                            connections.forEach { (clientId, connection) ->
-                                if (gameMap[game.id]!!.clients.contains(userMap[clientId]!!)) {
-                                    connection?.session?.sendSerialized(gameMap[game.id]!!.toJoinResponse())
+                            val gameModel = gameRepository.get(joinRequest.gameId)!!
+                            val clientModel = clientRepository.get(joinRequest.clientId)!!
+
+                            if (gameModel.clients.isEmpty()) {
+                                gameModel.deleteGameActionTimer.cancel()
+                            }
+                            gameModel.clients.add(clientModel)
+
+                            connections.forEach { (_, connection) ->
+                                if (gameModel.clients.contains(clientModel)) {
+                                    connection?.session?.sendSerialized(gameModel.toJoinResponse())
                                 }
                             }
-                            // TODO: log maps with games and clients
                         }
 
                         Method.PLAY -> {
-                            val setRequest = converter?.deserialize<PlayRequest>(frame)!!
+                            val playRequest = converter?.deserialize<PlayRequest>(frame)!!
 
-                            val game = setRequest.toGame()
-                            val ball = setRequest.toBall()
+                            // TODO: maybe remove this
+                            val ball = playRequest.toBall()
 
                             this@configureRouting.log.info(
-                                "Received set request for game ${game.id} and ball ${ball.id} with color ${ball.color} from client ${setRequest.toClient().id}"
+                                "Received set request for game ${playRequest.gameId} and ball ${ball.id} with color ${ball.color} from client ${playRequest.clientId}"
                             )
 
-                            // TODO: handle exceptions
-                            if (!gameMap.containsKey(game.id)) {
-                                this@configureRouting.log.error("Game ${game.id} not found")
+                            if (!gameRepository.contains(playRequest.gameId)) {
+                                this@configureRouting.log.error("Game ${playRequest.gameId} not found")
                                 return@webSocket
                             }
 
+                            val gameModel = gameRepository.get(playRequest.gameId)!!
+
                             // TODO: refactor .value call
-                            gameMap[game.id]!!.balls[ball.id.value].color = ball.color
+                            gameModel.balls[ball.id.value].color = ball.color
                         }
 
-                        // TODO: add leave game action
-
                         Method.ROOMS -> {
-                            val rooms = gameMap.values.map { it.toGetGameDescriptionResponse() }.toList()
+                            val rooms = gameRepository.getAllGames().map { it.toGetGameDescriptionResponse() }.toList()
                             sendSerialized(GetGamesResponse(rooms))
+                        }
+
+                        Method.LEAVE -> {
+                            val leaveRequest = converter?.deserialize<LeaveRequest>(frame)!!
+
+                            this@configureRouting.log.info(
+                                "Received leave request for game ${leaveRequest.gameId} from client ${leaveRequest.clientId}"
+                            )
+
+                            if (!clientRepository.contains(leaveRequest.clientId)) {
+                                this@configureRouting.log.error("Client ${leaveRequest.clientId} not found")
+                                return@webSocket
+                            }
+
+                            if (!gameRepository.contains(leaveRequest.gameId)) {
+                                this@configureRouting.log.error("Game ${leaveRequest.gameId} not found")
+                                return@webSocket
+                            }
+
+                            val game = gameRepository.get(leaveRequest.gameId)!!
+                            val client = clientRepository.get(leaveRequest.clientId)!!
+
+                            this@configureRouting.log.debug("Clients before removing {}: {}", client.id, game.clients)
+
+                            game.clients.remove(client)
+
+                            this@configureRouting.log.debug("Clients after removing {}: {}", client.id, game.clients)
+
+                            if (game.clients.isEmpty()) {
+
+                                this@configureRouting.log.info("No clients for ${game.id}. Prepare to set timer...")
+
+                                game.deleteGameActionTimer = Timer()
+                                game.deleteGameActionTimer.schedule(5000) {
+
+                                    this@configureRouting.log.info("Performing delete game action for game ${game.id}")
+
+                                    game.updateJob.cancel()
+                                    gameRepository.remove(game)
+                                }
+                            }
                         }
 
                         else -> this@configureRouting.log.error("Unknown method ${data.method}")
@@ -174,26 +223,24 @@ fun Application.configureRouting() {
                 this@configureRouting.log.info("Client $clientId disconnected")
 
                 connections.remove(clientId)
-                userMap.remove(clientId)
+                clientRepository.disconnect(currentSessionClient)
 
-                this@configureRouting.log.info("Clients connected on out: ${userMap.map { it.key }}")
+                this@configureRouting.log.info("Clients connected on out: ${clientRepository.getAllClients()}")
 
-                gameMap.values.forEach { game ->
-                    game.clients.remove(client)
+                gameRepository.getAllGames().forEach { gameModel ->
 
-                    // TODO: fix game deletion
+                    gameModel.clients.remove(currentSessionClient)
+                    if (gameModel.clients.isEmpty()) {
 
-                    if (game.clients.isEmpty()) {
+                        this@configureRouting.log.info("No clients for ${gameModel.id}. Prepare to set timer...")
 
-                        this@configureRouting.log.info("No clients for ${game.id}. Prepare to set timer...")
+                        gameModel.deleteGameActionTimer = Timer()
+                        gameModel.deleteGameActionTimer.schedule(5000) {
 
-                        game.deleteGameActionTimer = Timer()
-                        game.deleteGameActionTimer.schedule(60000) {
+                            this@configureRouting.log.info("Performing delete game action for game ${gameModel.id}")
 
-                            this@configureRouting.log.info("Performing delete game action for game ${game.id}")
-
-                            game.updateJob.cancel()
-                            gameMap.remove(game.id)
+                            gameModel.updateJob.cancel()
+                            gameRepository.remove(gameModel)
                         }
                     }
                 }
