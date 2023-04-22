@@ -23,7 +23,7 @@ function Ball({color}) {
     return <div style={ballStyle}></div>;
 }
 
-function RoomPage({handlers, sendRequest, onBackButtonClick}) {
+function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick}) {
     const [gameId, setGameId] = useState('');
     const [balls, setBalls] = useState([]);
     const [clientList, setClientList] = useState([]);
@@ -75,7 +75,7 @@ function RoomPage({handlers, sendRequest, onBackButtonClick}) {
 
     return (
         <>
-            <IconButton onClick={onBackButtonClick}>
+            <IconButton onClick={() => onLeaveRoomButtonClick(gameId)}>
                 <ArrowBack/>
             </IconButton>
             <div>

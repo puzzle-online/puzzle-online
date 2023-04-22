@@ -56,7 +56,6 @@ function TopBar({onBackButtonClick, onRefreshButtonClick}) {
                     <IconButton onClick={onBackButtonClick}>
                         <ArrowBack/>
                     </IconButton>
-                    {/*TODO: add refresh button*/}
                     <IconButton onClick={onRefreshButtonClick}>
                         <Refresh/>
                     </IconButton>

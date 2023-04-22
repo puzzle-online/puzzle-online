@@ -71,6 +71,11 @@ function Pages() {
         setPage('home');
     }
 
+    const handleLeaveButtonClick = (gameId) => {
+        sendRequest('leave', { gameId: gameId });
+        setPage('home');
+    }
+
     const handleJoinButtonClick = (gameId) => {
         sendRequest('join', { gameId: gameId });
         setPage('room');
@@ -84,7 +89,7 @@ function Pages() {
     return <>
         {page === 'home' && <HomePage onRoomsButtonClick={handleRoomsButtonClick}/>}
         {page === 'rooms' && <RoomsPage handlers={handlers} sendRequest={sendRequest} onBackButtonClick={handleBackButtonClick} onJoinButtonClick={handleJoinButtonClick} onCreateButtonClick={handleCreateButtonClick}/>}
-        {page === 'room' && <RoomPage handlers={handlers} sendRequest={sendRequest} onBackButtonClick={handleBackButtonClick}/>}
+        {page === 'room' && <RoomPage handlers={handlers} sendRequest={sendRequest} onLeaveRoomButtonClick={handleLeaveButtonClick}/>}
     </>;
 }
 
