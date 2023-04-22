@@ -52,7 +52,8 @@ function Pages() {
     };
 
     const sendRequest = (method, data) => /*(e) => */{
-        console.log(`sending request with method ${method} and data ${data}`)
+        console.log(`sending request with method ${method} and data:`)
+        console.log(data)
         // e.preventDefault();
         ws.send(JSON.stringify({
             method: method,
