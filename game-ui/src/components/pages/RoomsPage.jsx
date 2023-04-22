@@ -4,6 +4,7 @@ import PlayArrow from "@mui/icons-material/PlayArrow";
 import Home from "@mui/icons-material/Home";
 import Search from "@mui/icons-material/Search";
 import ArrowBack from "@mui/icons-material/ArrowBack";
+import Refresh from '@mui/icons-material/Refresh';
 
 import Stack from "@mui/joy/Stack";
 import Button from "@mui/joy/Button";
@@ -38,7 +39,7 @@ function Options() {
     );
 }
 
-function TopBar({onBackButtonClick}) {
+function TopBar({onBackButtonClick, onRefreshButtonClick}) {
     return (
         <Grid container
               spacing={2}
@@ -56,6 +57,9 @@ function TopBar({onBackButtonClick}) {
                         <ArrowBack/>
                     </IconButton>
                     {/*TODO: add refresh button*/}
+                    <IconButton onClick={onRefreshButtonClick}>
+                        <Refresh/>
+                    </IconButton>
                     <Input
                         startDecorator={<Search/>}
                         placeholder="Search"
@@ -140,6 +144,10 @@ function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick,
         console.log('added handleRooms');
     }, []);
 
+    const onRefreshButtonClick = () => {
+        sendRequest('rooms', {});
+    }
+
     const handleRooms = (response) => {
         setRooms(response.rooms);
         console.log(`Rooms: ${response.rooms}`);
@@ -152,7 +160,7 @@ function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick,
             alignItems="center"
             spacing={2}
         >
-            <TopBar onBackButtonClick={onBackButtonClick}/>
+            <TopBar onBackButtonClick={onBackButtonClick} onRefreshButtonClick={onRefreshButtonClick}/>
             <Rooms rooms={rooms} selectedGameId={selectedGameId} updateSelectedGameId={setSelectedGameId}/>
             <Actions selectedGameId={selectedGameId} onJoinButtonClick={onJoinButtonClick} onCreateButtonClick={onCreateButtonClick}/>
         </Stack>
