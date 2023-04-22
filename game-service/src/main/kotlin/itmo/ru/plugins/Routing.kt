@@ -140,11 +140,7 @@ fun Application.configureRouting() {
                             }
                             gameModel.clients.add(clientModel)
 
-                            connections.forEach { (_, connection) ->
-                                if (gameModel.clients.contains(clientModel)) {
-                                    connection?.session?.sendSerialized(gameModel.toJoinResponse())
-                                }
-                            }
+                            sendSerialized(gameModel.toJoinResponse())
                         }
 
                         Method.PLAY -> {
