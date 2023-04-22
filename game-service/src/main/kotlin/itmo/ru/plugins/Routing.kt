@@ -77,16 +77,6 @@ fun Application.configureRouting() {
             val connection = Connection(this)
             connections[clientId] = connection
 
-//            val timer = Timer().schedule(5000, 5000) {
-//                gameMap[client.gameId]?.let { game ->
-//                    launch {
-//                        this@configureRouting.log.info("Sending game update to ${client.id} for game ${game.id}")
-//                        connections[client.id]?.session?.sendSerialized(game.toUpdateResponse())
-//                    }
-//                }
-//            }
-//            timer.run()
-
             try {
                 sendSerialized(client.toConnectResponse())
 
@@ -134,7 +124,9 @@ fun Application.configureRouting() {
                             }
 
                             userMap[user.id]?.let {
-                                gameMap[game.id]!!.deleteGameActionTimer.cancel()
+                                if (gameMap[game.id]!!.clients.isEmpty()) {
+                                    gameMap[game.id]!!.deleteGameActionTimer.cancel()
+                                }
                                 gameMap[game.id]!!.clients.add(it)
                             }
 
@@ -195,6 +187,7 @@ fun Application.configureRouting() {
 
                         this@configureRouting.log.info("No clients for ${game.id}. Prepare to set timer...")
 
+                        game.deleteGameActionTimer = Timer()
                         game.deleteGameActionTimer.schedule(60000) {
 
                             this@configureRouting.log.info("Performing delete game action for game ${game.id}")
