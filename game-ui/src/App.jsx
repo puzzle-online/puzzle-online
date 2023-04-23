@@ -38,7 +38,7 @@ function Pages() {
     }, []);
 
     const connect = () => {
-        const newWs = new WebSocket('ws://localhost:3000/chat');
+        const newWs = new WebSocket('ws://localhost:3000/game');
         console.log('WebSocket connecting...');
         newWs.onopen = () => {
             console.log('WebSocket connected');
