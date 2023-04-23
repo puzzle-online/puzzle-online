@@ -71,13 +71,13 @@ function Pages() {
         setPage('home');
     }
 
-    const handleLeaveButtonClick = (gameId) => {
-        sendRequest('leave', { gameId: gameId });
+    const handleLeaveButtonClick = (roomId) => {
+        sendRequest('leave', { roomId: roomId });
         setPage('home');
     }
 
-    const handleJoinButtonClick = (gameId) => {
-        sendRequest('join', { gameId: gameId });
+    const handleJoinButtonClick = (roomId) => {
+        sendRequest('join', { roomId: roomId });
         setPage('room');
     }
 

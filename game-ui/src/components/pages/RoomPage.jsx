@@ -24,7 +24,7 @@ function Ball({color}) {
 }
 
 function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick}) {
-    const [gameId, setGameId] = useState('');
+    const [roomId, setRoomId] = useState('');
     const [balls, setBalls] = useState([]);
     const [clientList, setClientList] = useState([]);
 
@@ -35,21 +35,21 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick}) {
     const handleUpdate = (response) => {
         setBalls(response.balls);
         setClientList(response.clientIds);
-        console.log(`Updated game: ${gameId}, balls: ${response.balls}, clients: ${response.clientIds}`);
+        console.log(`Updated room: ${roomId}, balls: ${response.balls}, clients: ${response.clientIds}`);
     };
 
     const handleCreate = (response) => {
-        setGameId(response.gameId);
+        setRoomId(response.roomId);
         setBalls(response.balls);
         setClientList(response.clientIds);
-        console.log(`Created game: ${response.gameId}, balls: ${response.balls}, clients: ${response.clientIds}`);
+        console.log(`Created room: ${response.roomId}, balls: ${response.balls}, clients: ${response.clientIds}`);
     };
 
     const handleJoin = (response) => {
-        setGameId(response.gameId);
+        setRoomId(response.roomId);
         setBalls(response.balls);
         setClientList(response.clientIds);
-        console.log(`Joined game: ${response.gameId}, balls: ${response.balls}, clients: ${response.clientIds}`);
+        console.log(`Joined room: ${response.roomId}, balls: ${response.balls}, clients: ${response.clientIds}`);
     };
 
     useEffect(() => {
@@ -62,7 +62,7 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick}) {
     const playBall = (color) => (e) => {
         e.preventDefault();
         sendRequest('play', {
-            gameId: gameId,
+            roomId: roomId,
             ball: {
                 ballId: parseInt(color === 'red' ? playBallIdRed : color === 'blue' ? playBallIdBlue : playBallIdGreen),
                 color: color,
@@ -75,11 +75,11 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick}) {
 
     return (
         <>
-            <IconButton onClick={() => onLeaveRoomButtonClick(gameId)}>
+            <IconButton onClick={() => onLeaveRoomButtonClick(roomId)}>
                 <ArrowBack/>
             </IconButton>
             <div>
-                Current game ID: {gameId}
+                Current room ID: {roomId}
             </div>
             <div>
                 Current clients: {clientList.map((clientId) => (
