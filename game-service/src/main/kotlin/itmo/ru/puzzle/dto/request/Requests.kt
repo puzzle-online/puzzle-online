@@ -4,25 +4,13 @@ import itmo.ru.puzzle.domain.model.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LeaveRequest(val clientId: String, val gameId: String)
-
-fun LeaveRequest.toClient() = Client(ClientId(clientId))
-
-fun LeaveRequest.toGame() = Game(GameId(gameId))
+data class LeaveRequest(val clientId: String, val roomId: String)
 
 @Serializable
-data class JoinRequest(val clientId: String, val gameId: String)
-
-fun JoinRequest.toClient() = Client(ClientId(clientId))
-
-fun JoinRequest.toGame() = Game(GameId(gameId))
+data class JoinRequest(val clientId: String, val roomId: String)
 
 @Serializable
-data class PlayRequest(val clientId: String, val gameId: String, val ball: BallDTO)
-
-fun PlayRequest.toClient() = Client(ClientId(clientId))
-
-fun PlayRequest.toGame() = Game(GameId(gameId))
+data class PlayRequest(val clientId: String, val roomId: String, val ball: BallDTO)
 
 fun PlayRequest.toBall() = ball.toBall()
 

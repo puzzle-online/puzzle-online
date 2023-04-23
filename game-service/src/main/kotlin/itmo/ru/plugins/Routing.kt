@@ -7,7 +7,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import itmo.ru.puzzle.domain.model.*
 import itmo.ru.puzzle.domain.repository.ClientRepository
-import itmo.ru.puzzle.domain.repository.GameRepository
+import itmo.ru.puzzle.domain.repository.RoomRepository
 import itmo.ru.puzzle.dto.request.*
 import itmo.ru.puzzle.dto.response.*
 import kotlinx.coroutines.*
@@ -19,7 +19,6 @@ import kotlin.concurrent.schedule
 
 
 // TODO: make client game message entities
-// TODO: set repos in same package
 
 // TODO: divide into request and response
 @Serializable
@@ -58,9 +57,6 @@ open class Response(val method: Method)
 fun getUUID() = UUID.randomUUID().toString()
 
 
-//val userMap = mutableMapOf<ClientId, Client>()
-//val gameMap = mutableMapOf<GameId, Game>()
-
 class Connection(val session: WebSocketServerSession) {
     companion object {
         // TODO: maybe set UUID here
@@ -73,7 +69,7 @@ class Connection(val session: WebSocketServerSession) {
 fun Application.configureRouting() {
     routing {
         val connections = Collections.synchronizedMap<ClientId, Connection?>(mutableMapOf())
-        val gameRepository = GameRepository()
+        val roomRepository = RoomRepository()
         val clientRepository = ClientRepository()
 
         webSocket("/chat") {
@@ -93,28 +89,28 @@ fun Application.configureRouting() {
                     val data = converter?.deserialize<Response>(frame)!!
                     when (data.method) {
                         Method.CREATE -> {
-                            val gameId = GameId(getUUID())
+                            val roomId = RoomId(getUUID())
 
-                            val game = Game(
-                                gameId,
+                            val room = Room(
+                                roomId,
                                 MutableList(10) {
                                     Ball(BallId(it), Color.values().random())
                                 },
                                 mutableSetOf(currentSessionClient)
                             )
 
-                            game.updateJob = CoroutineScope(Dispatchers.Default).launch {
+                            room.updateJob = CoroutineScope(Dispatchers.Default).launch {
                                 while (isActive) {
-                                    game.clients.forEach { client ->
-                                        connections[client.id]?.session?.sendSerialized(game.toUpdateResponse())
+                                    room.clients.forEach { client ->
+                                        connections[client.id]?.session?.sendSerialized(room.toUpdateResponse())
                                     }
                                     delay(5000)
                                 }
                             }
 
-                            gameRepository.put(game)
+                            roomRepository.put(room)
 
-                            sendSerialized(game.toCreateResponse())
+                            sendSerialized(room.toCreateResponse())
                         }
 
                         // TODO: on join unsubscribe from previous game
@@ -122,8 +118,8 @@ fun Application.configureRouting() {
                         Method.JOIN -> {
                             val joinRequest = converter?.deserialize<JoinRequest>(frame)!!
 
-                            if (!gameRepository.contains(joinRequest.gameId)) {
-                                this@configureRouting.log.error("Game ${joinRequest.gameId} not found")
+                            if (!roomRepository.contains(joinRequest.roomId)) {
+                                this@configureRouting.log.error("Room ${joinRequest.roomId} not found")
                                 return@webSocket
                             }
 
@@ -132,15 +128,15 @@ fun Application.configureRouting() {
                                 return@webSocket
                             }
 
-                            val gameModel = gameRepository.get(joinRequest.gameId)!!
-                            val clientModel = clientRepository.get(joinRequest.clientId)!!
+                            val room = roomRepository.get(joinRequest.roomId)!!
+                            val client = clientRepository.get(joinRequest.clientId)!!
 
-                            if (gameModel.clients.isEmpty()) {
-                                gameModel.deleteGameActionTimer.cancel()
+                            if (room.clients.isEmpty()) {
+                                room.deleteRoomActionTimer.cancel()
                             }
-                            gameModel.clients.add(clientModel)
+                            room.clients.add(client)
 
-                            sendSerialized(gameModel.toJoinResponse())
+                            sendSerialized(room.toJoinResponse())
                         }
 
                         Method.PLAY -> {
@@ -150,30 +146,30 @@ fun Application.configureRouting() {
                             val ball = playRequest.toBall()
 
                             this@configureRouting.log.info(
-                                "Received set request for game ${playRequest.gameId} and ball ${ball.id} with color ${ball.color} from client ${playRequest.clientId}"
+                                "Received set request for room ${playRequest.roomId} and ball ${ball.id} with color ${ball.color} from client ${playRequest.clientId}"
                             )
 
-                            if (!gameRepository.contains(playRequest.gameId)) {
-                                this@configureRouting.log.error("Game ${playRequest.gameId} not found")
+                            if (!roomRepository.contains(playRequest.roomId)) {
+                                this@configureRouting.log.error("Room ${playRequest.roomId} not found")
                                 return@webSocket
                             }
 
-                            val gameModel = gameRepository.get(playRequest.gameId)!!
+                            val room = roomRepository.get(playRequest.roomId)!!
 
                             // TODO: refactor .value call
-                            gameModel.balls[ball.id.value].color = ball.color
+                            room.balls[ball.id.value].color = ball.color
                         }
 
                         Method.ROOMS -> {
-                            val rooms = gameRepository.getAllGames().map { it.toGetGameDescriptionResponse() }.toList()
-                            sendSerialized(GetGamesResponse(rooms))
+                            val rooms = roomRepository.getAllRooms().map { it.toGetRoomDescriptionResponse() }.toList()
+                            sendSerialized(GetRoomsResponse(rooms))
                         }
 
                         Method.LEAVE -> {
                             val leaveRequest = converter?.deserialize<LeaveRequest>(frame)!!
 
                             this@configureRouting.log.info(
-                                "Received leave request for game ${leaveRequest.gameId} from client ${leaveRequest.clientId}"
+                                "Received leave request for room ${leaveRequest.roomId} from client ${leaveRequest.clientId}"
                             )
 
                             if (!clientRepository.contains(leaveRequest.clientId)) {
@@ -181,31 +177,31 @@ fun Application.configureRouting() {
                                 return@webSocket
                             }
 
-                            if (!gameRepository.contains(leaveRequest.gameId)) {
-                                this@configureRouting.log.error("Game ${leaveRequest.gameId} not found")
+                            if (!roomRepository.contains(leaveRequest.roomId)) {
+                                this@configureRouting.log.error("Room ${leaveRequest.roomId} not found")
                                 return@webSocket
                             }
 
-                            val game = gameRepository.get(leaveRequest.gameId)!!
+                            val room = roomRepository.get(leaveRequest.roomId)!!
                             val client = clientRepository.get(leaveRequest.clientId)!!
 
-                            this@configureRouting.log.debug("Clients before removing {}: {}", client.id, game.clients)
+                            this@configureRouting.log.debug("Clients before removing {}: {}", client.id, room.clients)
 
-                            game.clients.remove(client)
+                            room.clients.remove(client)
 
-                            this@configureRouting.log.debug("Clients after removing {}: {}", client.id, game.clients)
+                            this@configureRouting.log.debug("Clients after removing {}: {}", client.id, room.clients)
 
-                            if (game.clients.isEmpty()) {
+                            if (room.clients.isEmpty()) {
 
-                                this@configureRouting.log.info("No clients for ${game.id}. Prepare to set timer...")
+                                this@configureRouting.log.info("No clients for ${room.id}. Prepare to set timer...")
 
-                                game.deleteGameActionTimer = Timer()
-                                game.deleteGameActionTimer.schedule(5000) {
+                                room.deleteRoomActionTimer = Timer()
+                                room.deleteRoomActionTimer.schedule(5000) {
 
-                                    this@configureRouting.log.info("Performing delete game action for game ${game.id}")
+                                    this@configureRouting.log.info("Performing delete room action for room ${room.id}")
 
-                                    game.updateJob.cancel()
-                                    gameRepository.remove(game)
+                                    room.updateJob.cancel()
+                                    roomRepository.remove(room)
                                 }
                             }
                         }
@@ -223,20 +219,20 @@ fun Application.configureRouting() {
 
                 this@configureRouting.log.info("Clients connected on out: ${clientRepository.getAllClients()}")
 
-                gameRepository.getAllGames().forEach { gameModel ->
+                roomRepository.getAllRooms().forEach { room ->
 
-                    gameModel.clients.remove(currentSessionClient)
-                    if (gameModel.clients.isEmpty()) {
+                    room.clients.remove(currentSessionClient)
+                    if (room.clients.isEmpty()) {
 
-                        this@configureRouting.log.info("No clients for ${gameModel.id}. Prepare to set timer...")
+                        this@configureRouting.log.info("No clients for ${room.id}. Prepare to set timer...")
 
-                        gameModel.deleteGameActionTimer = Timer()
-                        gameModel.deleteGameActionTimer.schedule(5000) {
+                        room.deleteRoomActionTimer = Timer()
+                        room.deleteRoomActionTimer.schedule(5000) {
 
-                            this@configureRouting.log.info("Performing delete game action for game ${gameModel.id}")
+                            this@configureRouting.log.info("Performing delete room action for room ${room.id}")
 
-                            gameModel.updateJob.cancel()
-                            gameRepository.remove(gameModel)
+                            room.updateJob.cancel()
+                            roomRepository.remove(room)
                         }
                     }
                 }
