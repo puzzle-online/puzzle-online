@@ -93,7 +93,7 @@ function Rooms({rooms, selectedRoomId, updateSelectedRoomId}) {
                         color={(selectedRoomId === room.roomId) ? "primary" : "default"}
                         sx={{width: 300}}
                         onClick={() => {
-                            updateSelectedRoomId(room.RoomId);
+                            updateSelectedRoomId(room.roomId);
                         }}
                         // TODO: make proper hover and selected states
                     >
