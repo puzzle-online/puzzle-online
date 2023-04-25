@@ -3,20 +3,19 @@ package itmo.ru.plugins
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.ktor.serialization.*
 import io.ktor.server.application.*
-import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
-import itmo.ru.puzzle.domain.model.*
 import itmo.ru.puzzle.domain.repository.ClientRepository
 import itmo.ru.puzzle.domain.repository.RoomRepository
 import itmo.ru.puzzle.domain.service.GameService
-import itmo.ru.puzzle.dto.request.*
-import itmo.ru.puzzle.dto.response.*
+import itmo.ru.puzzle.dto.request.JoinRequest
+import itmo.ru.puzzle.dto.request.LeaveRequest
+import itmo.ru.puzzle.dto.request.PlayRequest
+import itmo.ru.puzzle.dto.request.toBall
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.schedule
 
 
 // TODO: make client game message entities
@@ -75,7 +74,6 @@ fun Application.configureRouting() {
 
     routing {
         webSocket("/game") {
-            call.request.path()
             val client = gameService.connect(this)
 
             try {
@@ -89,13 +87,13 @@ fun Application.configureRouting() {
                         // TODO: on join unsubscribe from previous game
                         // TODO: don't send clientId in JoinRequest
                         Method.JOIN -> {
-                            val joinRequest = converter?.deserialize<JoinRequest>(frame)!!
+                            val joinRequest = converter!!.deserialize<JoinRequest>(frame)
 
                             gameService.join(joinRequest.clientId, joinRequest.roomId, this)
                         }
 
                         Method.PLAY -> {
-                            val playRequest = converter?.deserialize<PlayRequest>(frame)!!
+                            val playRequest = converter!!.deserialize<PlayRequest>(frame)
 
                             // TODO: maybe remove this
                             val ball = playRequest.toBall()
@@ -112,7 +110,7 @@ fun Application.configureRouting() {
                         }
 
                         Method.LEAVE -> {
-                            val leaveRequest = converter?.deserialize<LeaveRequest>(frame)!!
+                            val leaveRequest = converter!!.deserialize<LeaveRequest>(frame)
 
                             this@configureRouting.log.info(
                                 "Received leave request for room ${leaveRequest.roomId} from client ${leaveRequest.clientId}"
