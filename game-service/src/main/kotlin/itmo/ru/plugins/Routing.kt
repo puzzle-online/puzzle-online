@@ -64,30 +64,31 @@ fun Application.configureRouting() {
 
     routing {
         webSocket("/game") {
-            val sessionId = call.sessions.get<ClientId>()
+            val session = call.sessions.get<Session>()
 
-            if (sessionId == null) {
+            if (session == null) {
+                this@configureRouting.log.info("No session")
                 close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No session"))
                 return@webSocket
             }
 
-            gameService.memberJoin(sessionId, this)
+            gameService.memberJoin(session.id, this)
 
             try {
                 for (frame in incoming) {
                     val data = converter?.deserialize<Response>(frame)!!
                     when (data.method) {
-                        Method.CREATE -> gameService.create(sessionId, this)
+                        Method.CREATE -> gameService.create(session.id, this)
 
                         // TODO: don't send clientId in JoinRequest
                         Method.JOIN -> {
                             val joinRequest = converter!!.deserialize<JoinRequest>(frame)
 
                             this@configureRouting.log.info(
-                                "Received join request from client $sessionId: room ${joinRequest.roomId}"
+                                "Received join request from client $session: room ${joinRequest.roomId}"
                             )
 
-                            gameService.join(sessionId, RoomId.of(joinRequest.roomId), this)
+                            gameService.join(session.id, RoomId.of(joinRequest.roomId), this)
                         }
 
                         Method.PLAY -> {
@@ -96,14 +97,14 @@ fun Application.configureRouting() {
                             val ball = playRequest.toBall()
 
                             this@configureRouting.log.info(
-                                "Received set request from client $sessionId: room ${playRequest.roomId}, ball index ${ball.id}, color ${ball.color}"
+                                "Received set request from client $session: room ${playRequest.roomId}, ball index ${ball.id}, color ${ball.color}"
                             )
 
                             gameService.play(RoomId.of(playRequest.roomId), ball, this)
                         }
 
                         Method.ROOMS -> {
-                            this@configureRouting.log.info("Received rooms request from client $sessionId")
+                            this@configureRouting.log.info("Received rooms request from client $session")
 
                             gameService.getRooms(this)
                         }
@@ -112,10 +113,10 @@ fun Application.configureRouting() {
                             val leaveRequest = converter!!.deserialize<LeaveRequest>(frame)
 
                             this@configureRouting.log.info(
-                                "Received leave request from client $sessionId: room ${leaveRequest.roomId}"
+                                "Received leave request from client $session: room ${leaveRequest.roomId}"
                             )
 
-                            gameService.leave(sessionId, RoomId.of(leaveRequest.roomId), this)
+                            gameService.leave(session.id, RoomId.of(leaveRequest.roomId), this)
                         }
 
                         else -> this@configureRouting.log.error("Unknown method ${data.method}")
@@ -124,7 +125,7 @@ fun Application.configureRouting() {
             } catch (e: Exception) {
                 this@configureRouting.log.error("Error occurred in websocket", e)
             } finally {
-                gameService.disconnect(sessionId)
+                gameService.disconnect(session.id)
             }
         }
     }

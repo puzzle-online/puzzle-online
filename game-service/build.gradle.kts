@@ -34,7 +34,9 @@ dependencies {
     implementation("io.ktor:ktor-server-cors-jvm:2.2.4")
     implementation("io.ktor:ktor-server-sessions-jvm:2.2.4")
     implementation("io.ktor:ktor-server-call-logging-jvm:2.2.4")
+    implementation("io.ktor:ktor-server-default-headers-jvm:2.2.4")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     implementation("io.ktor:ktor-server-sessions:$ktor_version")
+    implementation("io.ktor:ktor-server-default-headers:$ktor_version")
 }

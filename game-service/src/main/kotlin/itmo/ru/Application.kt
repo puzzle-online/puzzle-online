@@ -4,6 +4,7 @@ import io.ktor.serialization.kotlinx.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.sessions.*
 import io.ktor.server.websocket.*
 import io.ktor.util.*
@@ -19,6 +20,7 @@ fun main() {
 }
 
 fun Application.module() {
+    install(DefaultHeaders)
     install(WebSockets) {
         pingPeriod = Duration.ofSeconds(15)
         timeout = Duration.ofSeconds(15)
@@ -36,7 +38,9 @@ fun Application.module() {
     }
     intercept(ApplicationCallPipeline.Call) {
         if (call.sessions.get<Session>() == null) {
-            call.sessions.set(Session(ClientId(generateNonce())))
+            val value = generateNonce()
+            this@module.log.info("Generated nonce: $value")
+            call.sessions.set(Session(ClientId(value)))
         }
     }
     configureRouting()
