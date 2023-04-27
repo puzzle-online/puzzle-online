@@ -6,6 +6,8 @@ import itmo.ru.plugins.Response
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ConnectResponse(val clientId: String) : Response(Method.CONNECT)
-
-fun Client.toConnectResponse() = ConnectResponse(id.value)
+data class ConnectResponse(val clientId: String) : Response(Method.CONNECT) {
+    companion object {
+        fun of(client: Client) = ConnectResponse(client.id.value)
+    }
+}

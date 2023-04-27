@@ -4,8 +4,12 @@ import io.ktor.serialization.kotlinx.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.sessions.*
 import io.ktor.server.websocket.*
+import io.ktor.util.*
+import itmo.ru.plugins.Session
 import itmo.ru.plugins.configureRouting
+import itmo.ru.puzzle.domain.model.ClientId
 import kotlinx.serialization.json.Json
 import java.time.Duration
 
@@ -26,6 +30,14 @@ fun Application.module() {
                 prettyPrint = true
             }
         )
+    }
+    install(Sessions) {
+        cookie<Session>("client_session")
+    }
+    intercept(ApplicationCallPipeline.Call) {
+        if (call.sessions.get<Session>() == null) {
+            call.sessions.set(Session(ClientId(generateNonce())))
+        }
     }
     configureRouting()
 }

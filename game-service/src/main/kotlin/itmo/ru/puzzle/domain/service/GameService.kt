@@ -3,39 +3,56 @@ package itmo.ru.puzzle.domain.service
 import io.ktor.server.websocket.*
 import io.ktor.util.logging.*
 import io.ktor.websocket.*
-import itmo.ru.plugins.Connection
-import itmo.ru.plugins.getUUID
 import itmo.ru.puzzle.domain.model.*
 import itmo.ru.puzzle.domain.repository.ClientRepository
 import itmo.ru.puzzle.domain.repository.RoomRepository
 import itmo.ru.puzzle.dto.response.*
+import itmo.ru.puzzle.getUUID
 import kotlinx.coroutines.*
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.concurrent.schedule
 
+// TODO: consider multithreaded data access
 class GameService(
     private val roomRepository: RoomRepository,
     private val clientRepository: ClientRepository,
     private val logger: Logger,
 ) {
-    private val connections = Collections.synchronizedMap<ClientId, Connection?>(mutableMapOf())
+    /**
+     * Associates a session ID to a set of websockets.
+     * Since a browser is able to open several tabs and windows with the same cookies and thus the same session.
+     * There might be several opened sockets for the same client.
+     */
+    private val sessions = ConcurrentHashMap<ClientId, MutableList<WebSocketServerSession>>()
 
-    fun connect(session: WebSocketServerSession): Client {
-        val client = Client(ClientId(getUUID()))
+    /**
+     * Handles that a member is identified by a session ID and a socket joined.
+     */
+    suspend fun memberJoin(clientId: ClientId, session: WebSocketServerSession) {
+        val client = Client(clientId)
+
         clientRepository.register(client)
-        connections[client.id] = Connection(session)
-        return client
-    }
 
-    suspend fun sendConnectResponse(client: Client, session: WebSocketServerSession) {
+        val connections = sessions.computeIfAbsent(clientId) { CopyOnWriteArrayList() }
+        connections.add(session)
+
         logger.info("Client connected: $client")
 
-        session.sendSerialized(client.toConnectResponse())
+        session.sendSerialized(ConnectResponse.of(client))
 
         logger.info("All connected clients: ${clientRepository.getAllClients()}")
     }
 
-    suspend fun create(client: Client, session: WebSocketServerSession) {
+    suspend fun create(clientId: ClientId, session: WebSocketServerSession) {
+        val client = clientRepository.get(clientId)
+
+        if (client == null) {
+            session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Client not found"))
+            return
+        }
+
         val roomId = RoomId(getUUID())
 
         val room = Room(
@@ -49,7 +66,9 @@ class GameService(
         room.updateJob = CoroutineScope(Dispatchers.Default).launch {
             while (isActive) {
                 room.clients.forEach { client ->
-                    connections[client.id]?.session?.sendSerialized(room.toUpdateResponse())
+                    sessions[client.id]!!.forEach { session ->
+                        session.sendSerialized(UpdateResponse.of(room))
+                    }
                 }
                 delay(5000)
             }
@@ -60,13 +79,15 @@ class GameService(
         session.sendSerialized(room.toCreateResponse())
     }
 
-    suspend fun join(clientId: String, roomId: String, session: WebSocketServerSession) {
+    suspend fun join(clientId: ClientId, roomId: RoomId, session: WebSocketServerSession) {
         if (!roomRepository.contains(roomId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
+            return
         }
 
         if (!clientRepository.contains(clientId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Client $clientId not found"))
+            return
         }
 
         val room = roomRepository.get(roomId)!!
@@ -77,12 +98,15 @@ class GameService(
         }
         room.clients.add(client)
 
+        logger.info("Client $clientId joined room $roomId")
+
         session.sendSerialized(room.toJoinResponse())
     }
 
-    suspend fun play(roomId: String, ball: Ball, session: WebSocketServerSession) {
+    suspend fun play(roomId: RoomId, ball: Ball, session: WebSocketServerSession) {
         if (!roomRepository.contains(roomId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
+            return
         }
 
         val room = roomRepository.get(roomId)!!
@@ -91,7 +115,13 @@ class GameService(
         room.balls[ball.id.value].color = ball.color
     }
 
-    suspend fun leave(clientId: String, roomId: String, session: WebSocketServerSession) {
+    suspend fun getRooms(session: WebSocketServerSession) {
+        val rooms = roomRepository.getAllRooms().map { it.toGetRoomDescriptionResponse() }
+
+        session.sendSerialized(GetRoomsResponse(rooms))
+    }
+
+    suspend fun leave(clientId: ClientId, roomId: RoomId, session: WebSocketServerSession) {
         if (!clientRepository.contains(clientId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Client $clientId not found"))
         }
@@ -106,15 +136,15 @@ class GameService(
         room.removeClient(client)
     }
 
-    suspend fun getRooms(session: WebSocketServerSession) {
-        val rooms = roomRepository.getAllRooms().map { it.toGetRoomDescriptionResponse() }.toList()
-        session.sendSerialized(GetRoomsResponse(rooms))
-    }
+    fun disconnect(clientId: ClientId) {
+        if (sessions[clientId] == null) {
+            return
+        }
 
-    fun disconnect(client: Client) {
-        logger.info("Client ${client.id} disconnected")
+        sessions.remove(clientId)
 
-        connections.remove(client.id)
+        val client = clientRepository.get(clientId)!!
+
         clientRepository.disconnect(client)
 
         logger.info("Clients connected on out: ${clientRepository.getAllClients()}")
@@ -122,6 +152,8 @@ class GameService(
         roomRepository.getAllRooms().forEach { room ->
             room.removeClient(client)
         }
+
+        logger.info("Rooms after removing client $clientId: ${roomRepository.getAllRooms()}")
     }
 
     private fun Room.removeClient(client: Client) {

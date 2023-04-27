@@ -2,7 +2,6 @@ package itmo.ru.puzzle.dto.response
 
 import itmo.ru.plugins.Method
 import itmo.ru.plugins.Response
-import itmo.ru.puzzle.domain.model.Ball
 import itmo.ru.puzzle.domain.model.Client
 import itmo.ru.puzzle.domain.model.Room
 import kotlinx.serialization.Serializable
@@ -10,18 +9,16 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CreateResponse(
     val roomId: String,
-    val balls: List<BallResponse>,
+    val balls: List<BallDTO>,
     val clientIds: List<String>,
 ) : Response(Method.CREATE)
 
 fun Room.toCreateResponse() = CreateResponse(id.value, balls.toResponse(), clients.getIds())
 
-private fun MutableList<Ball>.toResponse() = this.map { it.toResponse() }.toList()
-
 @Serializable
 data class JoinResponse(
     val roomId: String,
-    val balls: List<BallResponse>,
+    val balls: List<BallDTO>,
     val clientIds: List<String>,
 ) : Response(Method.JOIN)
 
@@ -42,10 +39,12 @@ data class GetRoomsResponse(
 
 @Serializable
 data class UpdateResponse(
-    val balls: List<BallResponse>,
+    val balls: List<BallDTO>,
     val clientIds: List<String>,
-) : Response(Method.UPDATE)
+) : Response(Method.UPDATE) {
+    companion object {
+        fun of(room: Room) = UpdateResponse(room.balls.toResponse(), room.clients.getIds())
+    }
+}
 
-fun Room.toUpdateResponse() = UpdateResponse(balls.toResponse(), clients.getIds())
-
-private fun MutableSet<Client>.getIds() = this.map { it.id.value }.toList()
+private fun MutableSet<Client>.getIds() = this.map { it.id.value }

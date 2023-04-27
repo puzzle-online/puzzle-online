@@ -4,7 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.ktor.serialization.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
 import io.ktor.server.websocket.*
+import io.ktor.websocket.*
+import itmo.ru.puzzle.domain.model.ClientId
+import itmo.ru.puzzle.domain.model.RoomId
 import itmo.ru.puzzle.domain.repository.ClientRepository
 import itmo.ru.puzzle.domain.repository.RoomRepository
 import itmo.ru.puzzle.domain.service.GameService
@@ -15,7 +19,6 @@ import itmo.ru.puzzle.dto.request.toBall
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 
 
 // TODO: make client game message entities
@@ -53,19 +56,6 @@ enum class Method {
 @JsonIgnoreProperties(ignoreUnknown = true)
 open class Response(val method: Method)
 
-
-fun getUUID() = UUID.randomUUID().toString()
-
-
-class Connection(val session: WebSocketServerSession) {
-    companion object {
-        // TODO: maybe set UUID here
-        val lastId = AtomicInteger(0)
-    }
-
-    val name = "user${lastId.getAndIncrement()}"
-}
-
 fun Application.configureRouting() {
     val roomRepository = RoomRepository()
     val clientRepository = ClientRepository()
@@ -74,38 +64,47 @@ fun Application.configureRouting() {
 
     routing {
         webSocket("/game") {
-            val client = gameService.connect(this)
+            val sessionId = call.sessions.get<ClientId>()
+
+            if (sessionId == null) {
+                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No session"))
+                return@webSocket
+            }
+
+            gameService.memberJoin(sessionId, this)
 
             try {
-                gameService.sendConnectResponse(client, this)
-
                 for (frame in incoming) {
                     val data = converter?.deserialize<Response>(frame)!!
                     when (data.method) {
-                        Method.CREATE -> gameService.create(client, this)
+                        Method.CREATE -> gameService.create(sessionId, this)
 
-                        // TODO: on join unsubscribe from previous game
                         // TODO: don't send clientId in JoinRequest
                         Method.JOIN -> {
                             val joinRequest = converter!!.deserialize<JoinRequest>(frame)
 
-                            gameService.join(joinRequest.clientId, joinRequest.roomId, this)
+                            this@configureRouting.log.info(
+                                "Received join request from client $sessionId: room ${joinRequest.roomId}"
+                            )
+
+                            gameService.join(sessionId, RoomId.of(joinRequest.roomId), this)
                         }
 
                         Method.PLAY -> {
                             val playRequest = converter!!.deserialize<PlayRequest>(frame)
 
-                            // TODO: maybe remove this
                             val ball = playRequest.toBall()
 
                             this@configureRouting.log.info(
-                                "Received set request for room ${playRequest.roomId} and ball ${ball.id} with color ${ball.color} from client ${playRequest.clientId}"
+                                "Received set request from client $sessionId: room ${playRequest.roomId}, ball index ${ball.id}, color ${ball.color}"
                             )
 
-                            gameService.play(playRequest.roomId, ball, this)
+                            gameService.play(RoomId.of(playRequest.roomId), ball, this)
                         }
 
                         Method.ROOMS -> {
+                            this@configureRouting.log.info("Received rooms request from client $sessionId")
+
                             gameService.getRooms(this)
                         }
 
@@ -113,10 +112,10 @@ fun Application.configureRouting() {
                             val leaveRequest = converter!!.deserialize<LeaveRequest>(frame)
 
                             this@configureRouting.log.info(
-                                "Received leave request for room ${leaveRequest.roomId} from client ${leaveRequest.clientId}"
+                                "Received leave request from client $sessionId: room ${leaveRequest.roomId}"
                             )
 
-                            gameService.leave(leaveRequest.clientId, leaveRequest.roomId, this)
+                            gameService.leave(sessionId, RoomId.of(leaveRequest.roomId), this)
                         }
 
                         else -> this@configureRouting.log.error("Unknown method ${data.method}")
@@ -125,8 +124,10 @@ fun Application.configureRouting() {
             } catch (e: Exception) {
                 this@configureRouting.log.error("Error occurred in websocket", e)
             } finally {
-                gameService.disconnect(client)
+                gameService.disconnect(sessionId)
             }
         }
     }
 }
+
+data class Session(val id: ClientId)

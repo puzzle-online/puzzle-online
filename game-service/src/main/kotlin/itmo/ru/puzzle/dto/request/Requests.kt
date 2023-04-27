@@ -1,20 +1,16 @@
 package itmo.ru.puzzle.dto.request
 
-import itmo.ru.puzzle.domain.model.*
+import itmo.ru.puzzle.dto.response.BallDTO
+import itmo.ru.puzzle.dto.response.toBall
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LeaveRequest(val clientId: String, val roomId: String)
+data class LeaveRequest(val roomId: String)
 
 @Serializable
-data class JoinRequest(val clientId: String, val roomId: String)
+data class JoinRequest(val roomId: String)
 
 @Serializable
-data class PlayRequest(val clientId: String, val roomId: String, val ball: BallDTO)
+data class PlayRequest(val roomId: String, val ballDTO: BallDTO)
 
-fun PlayRequest.toBall() = ball.toBall()
-
-@Serializable
-data class BallDTO(val ballId: Int, val color: String)
-
-fun BallDTO.toBall() = Ball(BallId(ballId), Color.valueOf(color.uppercase()))
+fun PlayRequest.toBall() = ballDTO.toBall()
