@@ -10,13 +10,11 @@ import RoomPage from "./components/pages/RoomPage.jsx";
 function Pages() {
     const [page, setPage] = useState('home');
 
-    const [clientId, setClientId] = useState('');
     const [ws, setWs] = useState(null);
     const handlers = useRef({})
 
     const handleConnect = (response) => {
-        setClientId(response.clientId);
-        console.log(`Connected with client ID: ${response.clientId}`);
+        console.log(`Connected to server`);
     };
 
     const handleUnknown = (response) => {
@@ -57,7 +55,6 @@ function Pages() {
         // e.preventDefault();
         ws.send(JSON.stringify({
             method: method,
-            clientId: clientId,
             ...data,
         }));
     };
