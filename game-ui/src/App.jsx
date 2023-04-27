@@ -6,6 +6,7 @@ import HomePage from "./components/pages/HomePage.jsx";
 import Header from "./components/Header.jsx";
 import RoomsPage from "./components/pages/RoomsPage.jsx";
 import RoomPage from "./components/pages/RoomPage.jsx";
+import Game from "./components/Game.jsx";
 
 function Pages() {
     const [page, setPage] = useState('home');
@@ -94,7 +95,8 @@ function App() {
     return (
         <div className="App">
             <Header/>
-            <Pages/>
+            {/*<Pages/>*/}
+            <Game/>
         </div>
     )
 }
