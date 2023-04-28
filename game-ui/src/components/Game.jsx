@@ -94,6 +94,7 @@ function ContainerWrapper({sendRequest, roomId}) {
         setCursorPosition({x: x, y: y});
         // TODO: use backlog of events instead of sending every event
         const move = {cursor: {x: x, y: y}, roomId: roomId};
+        move.box = null;
         if (onBoxMove) {
             const {boxX, boxY} = onBoxMove(e);
             move.box = {x: boxX, y: boxY};
