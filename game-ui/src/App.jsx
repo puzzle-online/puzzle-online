@@ -114,7 +114,7 @@ function Pages() {
             <RoomsPage handlers={handlers} sendRequest={sendRequest} onBackButtonClick={handleBackButtonClick}
                        onJoinButtonClick={handleJoinButtonClick} onCreateButtonClick={handleCreateButtonClick}/>}
         {page === 'room' &&
-            <RoomPage handlers={handlers} sendRequest={sendRequest} onLeaveRoomButtonClick={handleLeaveButtonClick} defaultBoxes={defaultBoxes}/>}
+            <RoomPage handlers={handlers} sendRequest={sendRequest} onLeaveRoomButtonClick={handleLeaveButtonClick} defaultBoxes={defaultBoxes} clientId={clientId}/>}
     </>;
 }
 
