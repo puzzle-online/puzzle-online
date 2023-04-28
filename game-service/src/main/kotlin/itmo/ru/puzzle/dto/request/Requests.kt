@@ -13,7 +13,7 @@ data class JoinRequest(val clientId: String, val roomId: String)
 data class PlayRequest(val clientId: String, val roomId: String, val ball: BallDTO)
 
 @Serializable
-data class MoveRequest(val clientId: String, val roomId: String, val cursor: PointDTO, val box: PointDTO?)
+data class MoveRequest(val clientId: String, val roomId: String, val cursor: CursorDTO, val box: BoxDTO?)
 
 @Serializable
 data class CreateRequest(val clientId: String, val boxes: List<BoxDTO>)
@@ -28,8 +28,8 @@ fun CursorDTO.toCursor() = Cursor(x, y)
 
 fun BoxDTO.toBox() = Box(id, x, y)
 
-@Serializable
-data class PointDTO(val x: Float, val y: Float)
+// @Serializable
+// data class PointDTO(val x: Float, val y: Float)
 
 fun PlayRequest.toBall() = ball.toBall()
 

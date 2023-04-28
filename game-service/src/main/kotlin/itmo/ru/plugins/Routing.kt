@@ -128,9 +128,14 @@ fun Application.configureRouting() {
                         Method.MOVE -> {
                             val moveRequest = converter!!.deserialize<MoveRequest>(frame)
 
+                            val box = moveRequest.box?.toBox()
+                            val cursor = moveRequest.cursor.toCursor()
+
                             this@configureRouting.log.info(
                                 "Received move request $moveRequest"
                             )
+
+                            gameService.handleMove(moveRequest.clientId, moveRequest.roomId, cursor, box)
                         }
 
                         else -> this@configureRouting.log.error("Unknown method ${data.method}")

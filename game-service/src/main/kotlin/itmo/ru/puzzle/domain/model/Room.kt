@@ -9,7 +9,7 @@ import java.util.*
 data class Cursor(val x: Float, val y: Float)
 
 fun Cursor.toDTO() = CursorDTO(x, y)
-data class Box(val id: Int, val x: Float, val y: Float)
+data class Box(val id: Int, var x: Float, var y: Float)
 
 fun Box.toDTO() = BoxDTO(id, x, y)
 
