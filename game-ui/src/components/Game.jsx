@@ -1,11 +1,11 @@
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {Sprite, Stage, Container, useApp} from "@pixi/react";
 import {Texture} from "pixi.js";
 import cursor from "../assets/cursor.png";
 
-const width = 800;
-const height = 500;
-const backgroundColor = 0x1d2320;
+const width = 1200;
+const height = 800;
+const backgroundColor = 0x505050;
 
 let index = 1;
 
@@ -83,7 +83,7 @@ function Cursor({position}) {
     );
 }
 
-function ContainerWrapper({sendRequest, roomId}) {
+function ContainerWrapper({sendRequest, roomId, defaultBoxes}) {
     const [cursorPosition, setCursorPosition] = useState({x: 0, y: 0});
     const app = useApp();
     // const onBoxMove = useRef(null);
@@ -108,19 +108,36 @@ function ContainerWrapper({sendRequest, roomId}) {
         eventMode="static"
         hitArea={app.screen}
     >
-        <DraggableBox tint={0xff00ff} x={0} setOnBoxMove={setOnBoxMove}/>
-        <DraggableBox tint={0x00ffff} x={100} setOnBoxMove={setOnBoxMove}/>
-        <DraggableBox tint={0xffffff} x={200} setOnBoxMove={setOnBoxMove}/>
-        <DraggableBox tint={0x00ff00} x={300} setOnBoxMove={setOnBoxMove}/>
-        <DraggableBox tint={0xffff00} x={400} setOnBoxMove={setOnBoxMove}/>
+        {/*<DraggableBox tint={0xff00ff} x={0} y={0} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0x00ffff} x={100} y={0} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0xf0f0f0} x={200} y={0} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0x00ff00} x={300} y={0} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0xffff00} x={400} y={0} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0x0000ff} x={500} y={0} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0xff0000} x={600} y={0} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0x000000} x={700} y={0} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0xffaaff} x={0} y={100} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0x00ffbb} x={100} y={100} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0xf0abcd} x={200} y={100} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0x00ff00} x={300} y={100} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0xccff00} x={400} y={100} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0x0000dd} x={500} y={100} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0xff0000} x={600} y={100} setOnBoxMove={setOnBoxMove}/>*/}
+        {/*<DraggableBox tint={0x000000} x={700} y={100} setOnBoxMove={setOnBoxMove}/>*/}
+        {defaultBoxes.boxes.map((box, index) => {
+            return <DraggableBox key={index} tint={0xff00ff} x={box.x} y={box.y} setOnBoxMove={setOnBoxMove}/>
+        })}
+
+
         <Cursor position={cursorPosition}/>
+        <Sprite position={{x: 400, y: 200}} texture={Texture.WHITE} width={400} height={400} zIndex={-1}/>
     </Container>;
 }
 
-function Game({sendRequest, roomId}) {
+function Game({sendRequest, roomId, defaultBoxes}) {
     return (
         <Stage width={width} height={height} options={{backgroundColor}}>
-            <ContainerWrapper sendRequest={sendRequest} roomId={roomId}/>
+            <ContainerWrapper sendRequest={sendRequest} roomId={roomId} defaultBoxes={defaultBoxes}/>
         </Stage>
     );
 }

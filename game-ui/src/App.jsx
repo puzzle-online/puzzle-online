@@ -15,6 +15,27 @@ function Pages() {
     const [ws, setWs] = useState(null);
     const handlers = useRef({})
 
+    const defaultBoxes = {
+        boxes: [
+            {id: 0, x: 0, y: 0},
+            {id: 1, x: 100, y: 0},
+            {id: 2, x: 200, y: 0},
+            {id: 3, x: 300, y: 0},
+            {id: 4, x: 400, y: 0},
+            {id: 5, x: 500, y: 0},
+            {id: 6, x: 600, y: 0},
+            {id: 7, x: 700, y: 0},
+            {id: 8, x: 0, y: 100},
+            {id: 9, x: 100, y: 100},
+            {id: 10, x: 200, y: 100},
+            {id: 11, x: 300, y: 100},
+            {id: 12, x: 400, y: 100},
+            {id: 13, x: 500, y: 100},
+            {id: 14, x: 600, y: 100},
+            {id: 15, x: 700, y: 100}
+        ]
+    };
+
     const handleConnect = (response) => {
         setClientId(response.clientId);
         console.log(`Connected with client ID: ${response.clientId}`);
@@ -73,31 +94,34 @@ function Pages() {
     }
 
     const handleLeaveButtonClick = (roomId) => {
-        sendRequest('leave', { roomId: roomId });
+        sendRequest('leave', {roomId: roomId});
         setPage('home');
     }
 
     const handleJoinButtonClick = (roomId) => {
-        sendRequest('join', { roomId: roomId });
+        sendRequest('join', {roomId: roomId});
         setPage('room');
     }
 
     const handleCreateButtonClick = () => {
-        sendRequest('create', {});
+        sendRequest('create', defaultBoxes);
         setPage('room');
     }
 
     return <>
         {page === 'home' && <HomePage onRoomsButtonClick={handleRoomsButtonClick}/>}
-        {page === 'rooms' && <RoomsPage handlers={handlers} sendRequest={sendRequest} onBackButtonClick={handleBackButtonClick} onJoinButtonClick={handleJoinButtonClick} onCreateButtonClick={handleCreateButtonClick}/>}
-        {page === 'room' && <RoomPage handlers={handlers} sendRequest={sendRequest} onLeaveRoomButtonClick={handleLeaveButtonClick}/>}
+        {page === 'rooms' &&
+            <RoomsPage handlers={handlers} sendRequest={sendRequest} onBackButtonClick={handleBackButtonClick}
+                       onJoinButtonClick={handleJoinButtonClick} onCreateButtonClick={handleCreateButtonClick}/>}
+        {page === 'room' &&
+            <RoomPage handlers={handlers} sendRequest={sendRequest} onLeaveRoomButtonClick={handleLeaveButtonClick} defaultBoxes={defaultBoxes}/>}
     </>;
 }
 
 function App() {
     return (
         <div className="App">
-            <Header/>
+            {/*<Header/>*/}
             <Pages/>
             {/*<Game/>*/}
         </div>
