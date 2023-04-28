@@ -98,8 +98,8 @@ function App() {
     return (
         <div className="App">
             <Header/>
-            {/*<Pages/>*/}
-            <Game/>
+            <Pages/>
+            {/*<Game/>*/}
         </div>
     )
 }

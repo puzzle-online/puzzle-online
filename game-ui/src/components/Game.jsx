@@ -20,10 +20,13 @@ function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, ...prop
     const onBoxMoveCallback = useCallback((outsideEvent) => {
         const {x, y} = outsideEvent.data.global;
         if (isDragging.current) {
+            let newX = x - offset.current.x;
+            let newY = y - offset.current.y;
             setPosition({
-                x: x - offset.current.x,
-                y: y - offset.current.y,
+                x: newX,
+                y: newY,
             })
+            return {boxX: newX, boxY: newY};
         }
     }, []);
 
@@ -80,7 +83,7 @@ function Cursor({position}) {
     );
 }
 
-function ContainerWrapper() {
+function ContainerWrapper({sendRequest}) {
     const [cursorPosition, setCursorPosition] = useState({x: 0, y: 0});
     const app = useApp();
     // const onBoxMove = useRef(null);
@@ -89,9 +92,13 @@ function ContainerWrapper() {
     function movePlayer(e) {
         const {x, y} = e.data.global
         setCursorPosition({x: x, y: y});
+        // TODO: use backlog of events instead of sending every event
+        const move = {cursor: {x: x, y: y}};
         if (onBoxMove) {
-            onBoxMove(e);
+            const {boxX, boxY} = onBoxMove(e);
+            move.box = {x: boxX, y: boxY};
         }
+        sendRequest('move', move);
     }
 
     return <Container
@@ -109,10 +116,10 @@ function ContainerWrapper() {
     </Container>;
 }
 
-function Game() {
+function Game({sendRequest}) {
     return (
         <Stage width={width} height={height} options={{backgroundColor}}>
-            <ContainerWrapper/>
+            <ContainerWrapper sendRequest={sendRequest}/>
         </Stage>
     );
 }

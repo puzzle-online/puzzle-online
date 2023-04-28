@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import IconButton from "@mui/joy/IconButton";
+import Game from "../Game.jsx";
 
 function Ball({color}) {
     const ballStyle = {
@@ -112,6 +113,7 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick}) {
                        placeholder="Type your message here"/>
                 <button type="submit">Make green</button>
             </form>
+            <Game sendRequest={sendRequest}/>
         </>
     )
 }
