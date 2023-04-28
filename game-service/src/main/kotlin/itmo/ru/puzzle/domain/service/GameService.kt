@@ -77,7 +77,7 @@ class GameService(
                 room.clients.forEach { client ->
                     connections[client.id]?.session?.sendSerialized(room.toUpdateResponse())
                 }
-                delay(5000)
+                delay(500)
             }
         }
 
