@@ -24,7 +24,7 @@ function Ball({color}) {
     return <div style={ballStyle}></div>;
 }
 
-function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes}) {
+function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes, clientId}) {
     const [roomId, setRoomId] = useState('');
     const [boxes, setBoxes] = useState([]);
     const [clients, setClients] = useState([]);
@@ -113,7 +113,7 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes})
             {/*           placeholder="Type your message here"/>*/}
             {/*    <button type="submit">Make green</button>*/}
             {/*</form>*/}
-            <Game sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients}/>
+            <Game sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients} clientId={clientId}/>
         </>
     )
 }

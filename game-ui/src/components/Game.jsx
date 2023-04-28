@@ -10,7 +10,7 @@ const backgroundColor = 0x505050;
 let index = 1;
 
 
-function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, ...props}) {
+function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, boxes, ...props}) {
     const isDragging = React.useRef(false);
     const offset = React.useRef({x: 0, y: 0});
     const [position, setPosition] = React.useState({x, y})
@@ -29,6 +29,20 @@ function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, 
             return {boxId: boxId, boxX: newX, boxY: newY};
         }
     }, []);
+
+
+    useEffect(() => {
+        onOutsideChangePosition();
+    }, [boxes]);
+
+    function onOutsideChangePosition() {
+        if (!isDragging.current) {
+            setPosition({
+                x: x,
+                y: y
+            })
+        }
+    }
 
     function onStart(e) {
         const {x, y} = e.data.global;
@@ -83,7 +97,7 @@ function Cursor({position}) {
     );
 }
 
-function ContainerWrapper({sendRequest, roomId, boxes, clients}) {
+function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
     const [cursorPosition, setCursorPosition] = useState({x: 0, y: 0});
     const app = useApp();
     // const onBoxMove = useRef(null);
@@ -108,29 +122,22 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients}) {
         eventMode="static"
         hitArea={app.screen}
     >
-        {/*<DraggableBox tint={0xff00ff} x={0} y={0} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0x00ffff} x={100} y={0} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0xf0f0f0} x={200} y={0} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0x00ff00} x={300} y={0} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0xffff00} x={400} y={0} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0x0000ff} x={500} y={0} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0xff0000} x={600} y={0} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0x000000} x={700} y={0} setOnBoxMove={setOnBoxMove}/>*/}
         {boxes.map((box) => {
-            return <DraggableBox key={box.id} tint={0xff00ff} x={box.x} y={box.y} setOnBoxMove={setOnBoxMove} boxId={box.id}/>
+            return <DraggableBox key={box.id} tint={0xff00ff} x={box.x} y={box.y} setOnBoxMove={setOnBoxMove} boxId={box.id} boxes={boxes}/>
         })}
         {/*<Cursor position={cursorPosition}/>*/}
         {clients.map((client) => {
+            if (client.id === clientId) return null;
             return <Cursor key={client.id} position={client.cursor}/>
         })}
         <Sprite position={{x: 400, y: 200}} texture={Texture.WHITE} width={400} height={400} zIndex={-1}/>
     </Container>;
 }
 
-function Game({sendRequest, roomId, boxes, clients}) {
+function Game({sendRequest, roomId, boxes, clients, clientId}) {
     return (
         <Stage width={width} height={height} options={{backgroundColor}}>
-            <ContainerWrapper sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients}/>
+            <ContainerWrapper sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients} clientId={clientId}/>
         </Stage>
     );
 }
