@@ -10,7 +10,7 @@ const backgroundColor = 0x505050;
 let index = 1;
 
 
-function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, ...props}) {
+function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, ...props}) {
     const isDragging = React.useRef(false);
     const offset = React.useRef({x: 0, y: 0});
     const [position, setPosition] = React.useState({x, y})
@@ -26,7 +26,7 @@ function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, ...prop
                 x: newX,
                 y: newY,
             })
-            return {boxX: newX, boxY: newY};
+            return {boxId: boxId, boxX: newX, boxY: newY};
         }
     }, []);
 
@@ -96,8 +96,8 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients}) {
         const move = {cursor: {x: x, y: y}, roomId: roomId};
         move.box = null;
         if (onBoxMove) {
-            const {boxX, boxY} = onBoxMove(e);
-            move.box = {x: boxX, y: boxY};
+            const {boxId, boxX, boxY} = onBoxMove(e);
+            move.box = {id: boxId, x: boxX, y: boxY};
         }
         sendRequest('move', move);
     }
@@ -117,7 +117,7 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients}) {
         {/*<DraggableBox tint={0xff0000} x={600} y={0} setOnBoxMove={setOnBoxMove}/>*/}
         {/*<DraggableBox tint={0x000000} x={700} y={0} setOnBoxMove={setOnBoxMove}/>*/}
         {boxes.map((box) => {
-            return <DraggableBox key={box.id} tint={0xff00ff} x={box.x} y={box.y} setOnBoxMove={setOnBoxMove}/>
+            return <DraggableBox key={box.id} tint={0xff00ff} x={box.x} y={box.y} setOnBoxMove={setOnBoxMove} boxId={box.id}/>
         })}
         {/*<Cursor position={cursorPosition}/>*/}
         {clients.map((client) => {
