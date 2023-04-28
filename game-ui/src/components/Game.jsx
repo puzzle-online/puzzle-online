@@ -26,6 +26,7 @@ function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, ...prop
                 x: newX,
                 y: newY,
             })
+            return {boxX: newX, boxY: newY};
         }
     }, []);
 
@@ -82,7 +83,7 @@ function Cursor({position}) {
     );
 }
 
-function ContainerWrapper() {
+function ContainerWrapper({sendRequest}) {
     const [cursorPosition, setCursorPosition] = useState({x: 0, y: 0});
     const app = useApp();
     // const onBoxMove = useRef(null);
@@ -94,7 +95,8 @@ function ContainerWrapper() {
         // TODO: use backlog of events instead of sending every event
         const move = {cursor: {x: x, y: y}};
         if (onBoxMove) {
-            onBoxMove(e);
+            const {boxX, boxY} = onBoxMove(e);
+            move.box = {x: boxX, y: boxY};
         }
         sendRequest('move', move);
     }
@@ -114,10 +116,10 @@ function ContainerWrapper() {
     </Container>;
 }
 
-function Game() {
+function Game({sendRequest}) {
     return (
         <Stage width={width} height={height} options={{backgroundColor}}>
-            <ContainerWrapper/>
+            <ContainerWrapper sendRequest={sendRequest}/>
         </Stage>
     );
 }
