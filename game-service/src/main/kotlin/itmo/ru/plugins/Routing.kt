@@ -82,7 +82,13 @@ fun Application.configureRouting() {
                 for (frame in incoming) {
                     val data = converter?.deserialize<Response>(frame)!!
                     when (data.method) {
-                        Method.CREATE -> gameService.create(client, this)
+                        Method.CREATE -> {
+                            val createRequest = converter!!.deserialize<CreateRequest>(frame)
+
+                            val boxes = createRequest.boxes.map { it.toBox() }
+
+                            gameService.create(client, boxes, this)
+                        }
 
                         // TODO: on join unsubscribe from previous game
                         // TODO: don't send clientId in JoinRequest

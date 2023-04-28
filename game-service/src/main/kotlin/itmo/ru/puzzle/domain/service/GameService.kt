@@ -21,7 +21,7 @@ class GameService(
     private val connections = Collections.synchronizedMap<ClientId, Connection?>(mutableMapOf())
 
     fun connect(session: WebSocketServerSession): Client {
-        val client = Client(ClientId(getUUID()))
+        val client = Client(ClientId(getUUID()), null)
         clientRepository.register(client)
         connections[client.id] = Connection(session)
         return client
@@ -35,15 +35,22 @@ class GameService(
         logger.info("All connected clients: ${clientRepository.getAllClients()}")
     }
 
-    suspend fun create(client: Client, session: WebSocketServerSession) {
+//    fun handleMove(clientId: String, roomId: String, session: WebSocketServerSession) {
+//
+//    }
+
+    suspend fun create(client: Client, boxes: List<Box>, session: WebSocketServerSession) {
         val roomId = RoomId(getUUID())
+
+        client.cursor = Cursor(0f, 0f)
 
         val room = Room(
             roomId,
             MutableList(10) {
                 Ball(BallId(it), Color.values().random())
             },
-            mutableSetOf(client)
+            mutableSetOf(client),
+            boxes.toMutableSet(),
         )
 
         room.updateJob = CoroutineScope(Dispatchers.Default).launch {
@@ -76,6 +83,7 @@ class GameService(
             room.deleteRoomActionTimer.cancel()
         }
         room.clients.add(client)
+        client.cursor = Cursor(0f, 0f)
 
         session.sendSerialized(room.toJoinResponse())
     }
@@ -128,6 +136,7 @@ class GameService(
         logger.debug("Clients before removing {}: {}", client.id, this.clients)
 
         this.clients.remove(client)
+        client.cursor = null
 
         logger.debug("Clients after removing {}: {}", client.id, this.clients)
 
