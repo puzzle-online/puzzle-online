@@ -8,10 +8,7 @@ import io.ktor.server.websocket.*
 import itmo.ru.puzzle.domain.repository.ClientRepository
 import itmo.ru.puzzle.domain.repository.RoomRepository
 import itmo.ru.puzzle.domain.service.GameService
-import itmo.ru.puzzle.dto.request.JoinRequest
-import itmo.ru.puzzle.dto.request.LeaveRequest
-import itmo.ru.puzzle.dto.request.PlayRequest
-import itmo.ru.puzzle.dto.request.toBall
+import itmo.ru.puzzle.dto.request.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
@@ -42,7 +39,10 @@ enum class Method {
     ROOMS,
 
     @SerialName("leave")
-    LEAVE;
+    LEAVE,
+
+    @SerialName("move")
+    MOVE;
 
     override fun toString() = name.lowercase(Locale.getDefault())
 }
@@ -117,6 +117,14 @@ fun Application.configureRouting() {
                             )
 
                             gameService.leave(leaveRequest.clientId, leaveRequest.roomId, this)
+                        }
+
+                        Method.MOVE -> {
+                            val moveRequest = converter!!.deserialize<MoveRequest>(frame)
+
+                            this@configureRouting.log.info(
+                                "Received move request $moveRequest"
+                            )
                         }
 
                         else -> this@configureRouting.log.error("Unknown method ${data.method}")

@@ -12,6 +12,12 @@ data class JoinRequest(val clientId: String, val roomId: String)
 @Serializable
 data class PlayRequest(val clientId: String, val roomId: String, val ball: BallDTO)
 
+@Serializable
+data class MoveRequest(val clientId: String, val cursor: PointDTO, val box: PointDTO?)
+
+@Serializable
+data class PointDTO(val x: Int, val y: Int)
+
 fun PlayRequest.toBall() = ball.toBall()
 
 @Serializable
