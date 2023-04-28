@@ -83,7 +83,7 @@ function Cursor({position}) {
     );
 }
 
-function ContainerWrapper({sendRequest, roomId, defaultBoxes}) {
+function ContainerWrapper({sendRequest, roomId, boxes, clients}) {
     const [cursorPosition, setCursorPosition] = useState({x: 0, y: 0});
     const app = useApp();
     // const onBoxMove = useRef(null);
@@ -116,28 +116,21 @@ function ContainerWrapper({sendRequest, roomId, defaultBoxes}) {
         {/*<DraggableBox tint={0x0000ff} x={500} y={0} setOnBoxMove={setOnBoxMove}/>*/}
         {/*<DraggableBox tint={0xff0000} x={600} y={0} setOnBoxMove={setOnBoxMove}/>*/}
         {/*<DraggableBox tint={0x000000} x={700} y={0} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0xffaaff} x={0} y={100} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0x00ffbb} x={100} y={100} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0xf0abcd} x={200} y={100} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0x00ff00} x={300} y={100} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0xccff00} x={400} y={100} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0x0000dd} x={500} y={100} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0xff0000} x={600} y={100} setOnBoxMove={setOnBoxMove}/>*/}
-        {/*<DraggableBox tint={0x000000} x={700} y={100} setOnBoxMove={setOnBoxMove}/>*/}
-        {defaultBoxes.boxes.map((box, index) => {
-            return <DraggableBox key={index} tint={0xff00ff} x={box.x} y={box.y} setOnBoxMove={setOnBoxMove}/>
+        {boxes.map((box) => {
+            return <DraggableBox key={box.id} tint={0xff00ff} x={box.x} y={box.y} setOnBoxMove={setOnBoxMove}/>
         })}
-
-
-        <Cursor position={cursorPosition}/>
+        {/*<Cursor position={cursorPosition}/>*/}
+        {clients.map((client) => {
+            return <Cursor key={client.id} position={client.cursor}/>
+        })}
         <Sprite position={{x: 400, y: 200}} texture={Texture.WHITE} width={400} height={400} zIndex={-1}/>
     </Container>;
 }
 
-function Game({sendRequest, roomId, defaultBoxes}) {
+function Game({sendRequest, roomId, boxes, clients}) {
     return (
         <Stage width={width} height={height} options={{backgroundColor}}>
-            <ContainerWrapper sendRequest={sendRequest} roomId={roomId} defaultBoxes={defaultBoxes}/>
+            <ContainerWrapper sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients}/>
         </Stage>
     );
 }

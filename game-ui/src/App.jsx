@@ -73,7 +73,7 @@ function Pages() {
         setWs(newWs);
     };
 
-    const sendRequest = (method, data) => /*(e) => */{
+    const sendRequest = (method, data) => /*(e) => */ {
         console.log(`sending request with method ${method} and data:`)
         console.log(data)
         // e.preventDefault();

@@ -27,29 +27,29 @@ function Ball({color}) {
 function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes}) {
     const [roomId, setRoomId] = useState('');
     const [boxes, setBoxes] = useState([]);
-    const [clientList, setClientList] = useState([]);
+    const [clients, setClients] = useState([]);
 
-    const [playBallIdRed, setPlayBallIdRed] = useState('');
-    const [playBallIdBlue, setPlayBallIdBlue] = useState('');
-    const [playBallIdGreen, setPlayBallIdGreen] = useState('');
+    // const [playBallIdRed, setPlayBallIdRed] = useState('');
+    // const [playBallIdBlue, setPlayBallIdBlue] = useState('');
+    // const [playBallIdGreen, setPlayBallIdGreen] = useState('');
 
     const handleUpdate = (response) => {
         setBoxes(response.boxes);
-        setClientList(response.clients);
+        setClients(response.clients);
         console.log(`Updated room: ${roomId}, clients: ${response.clients}`);
     };
 
     const handleCreate = (response) => {
         setRoomId(response.roomId);
         setBoxes(response.boxes);
-        setClientList(response.clients);
+        setClients(response.clients);
         console.log(`Created room: ${response.roomId}, clients: ${response.clients}`);
     };
 
     const handleJoin = (response) => {
         setRoomId(response.roomId);
         setBoxes(response.boxes);
-        setClientList(response.clients);
+        setClients(response.clients);
         console.log(`Joined room: ${response.roomId}, balls: ${response.boxes}, clients: ${response.clients}`);
     };
 
@@ -60,19 +60,19 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes})
         console.log('added handleCreate, handleJoin, handleUpdate');
     }, []);
 
-    const playBall = (color) => (e) => {
-        e.preventDefault();
-        sendRequest('play', {
-            roomId: roomId,
-            ball: {
-                ballId: parseInt(color === 'red' ? playBallIdRed : color === 'blue' ? playBallIdBlue : playBallIdGreen),
-                color: color,
-            },
-        });
-    };
-    const playRed = playBall('red');
-    const playBlue = playBall('blue');
-    const playGreen = playBall('green');
+    // const playBall = (color) => (e) => {
+    //     e.preventDefault();
+    //     sendRequest('play', {
+    //         roomId: roomId,
+    //         ball: {
+    //             ballId: parseInt(color === 'red' ? playBallIdRed : color === 'blue' ? playBallIdBlue : playBallIdGreen),
+    //             color: color,
+    //         },
+    //     });
+    // };
+    // const playRed = playBall('red');
+    // const playBlue = playBall('blue');
+    // const playGreen = playBall('green');
 
     return (
         <>
@@ -83,7 +83,7 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes})
                 Current room ID: {roomId}
             </div>
             {/*<div>*/}
-            {/*    Current clients: {clientList.map((clientId) => (*/}
+            {/*    Current clients: {clients.map((clientId) => (*/}
             {/*    <div key={clientId}>{clientId}</div>*/}
             {/*))}*/}
             {/*</div>*/}
@@ -113,7 +113,7 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes})
             {/*           placeholder="Type your message here"/>*/}
             {/*    <button type="submit">Make green</button>*/}
             {/*</form>*/}
-            <Game sendRequest={sendRequest} roomId={roomId} defaultBoxes={defaultBoxes}/>
+            <Game sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients}/>
         </>
     )
 }
