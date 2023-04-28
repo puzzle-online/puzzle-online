@@ -83,7 +83,7 @@ function Cursor({position}) {
     );
 }
 
-function ContainerWrapper({sendRequest}) {
+function ContainerWrapper({sendRequest, roomId}) {
     const [cursorPosition, setCursorPosition] = useState({x: 0, y: 0});
     const app = useApp();
     // const onBoxMove = useRef(null);
@@ -93,7 +93,8 @@ function ContainerWrapper({sendRequest}) {
         const {x, y} = e.data.global
         setCursorPosition({x: x, y: y});
         // TODO: use backlog of events instead of sending every event
-        const move = {cursor: {x: x, y: y}};
+        const move = {cursor: {x: x, y: y}, roomId: roomId};
+        move.box = null;
         if (onBoxMove) {
             const {boxX, boxY} = onBoxMove(e);
             move.box = {x: boxX, y: boxY};
@@ -116,10 +117,10 @@ function ContainerWrapper({sendRequest}) {
     </Container>;
 }
 
-function Game({sendRequest}) {
+function Game({sendRequest, roomId}) {
     return (
         <Stage width={width} height={height} options={{backgroundColor}}>
-            <ContainerWrapper sendRequest={sendRequest}/>
+            <ContainerWrapper sendRequest={sendRequest} roomId={roomId}/>
         </Stage>
     );
 }

@@ -113,7 +113,7 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick}) {
                        placeholder="Type your message here"/>
                 <button type="submit">Make green</button>
             </form>
-            <Game sendRequest={sendRequest}/>
+            <Game sendRequest={sendRequest} roomId={roomId}/>
         </>
     )
 }
