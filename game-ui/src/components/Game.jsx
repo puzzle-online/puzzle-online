@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useRef, useState} from "react";
 import {Sprite, Stage, Container, useApp} from "@pixi/react";
 import {Texture} from "pixi.js";
 import cursor from "../assets/cursor.png";
+// import joker from "../assets/teamwork.png";
 
 const width = 1200;
 const height = 800;
@@ -72,10 +73,11 @@ function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, 
             alpha={alpha}
             position={position}
             texture={Texture.WHITE}
+            // texture={Texture.from(joker)}
             width={100}
             height={100}
             zIndex={zIndex}
-            tint={tint}
+            // tint={tint}
             eventMode='static'
             pointerdown={onStart}
             pointerup={onEnd}
@@ -123,7 +125,15 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
         hitArea={app.screen}
     >
         {boxes.map((box) => {
-            return <DraggableBox key={box.id} tint={0xff00ff} x={box.x} y={box.y} setOnBoxMove={setOnBoxMove} boxId={box.id} boxes={boxes}/>
+            return <DraggableBox
+                key={box.id}
+                tint={0xff00ff}
+                x={box.x}
+                y={box.y}
+                setOnBoxMove={setOnBoxMove}
+                boxId={box.id}
+                boxes={boxes}
+            />
         })}
         {/*<Cursor position={cursorPosition}/>*/}
         {clients.map((client) => {
