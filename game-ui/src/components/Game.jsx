@@ -1,8 +1,8 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import {Sprite, Stage, Container, useApp} from "@pixi/react";
-import {Texture} from "pixi.js";
+import {Rectangle, Texture} from "pixi.js";
 import cursor from "../assets/cursor.png";
-// import joker from "../assets/teamwork.png";
+import duck from "../assets/duck.png";
 
 const width = 1200;
 const height = 800;
@@ -17,6 +17,29 @@ function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, 
     const [position, setPosition] = React.useState({x, y})
     const [alpha, setAlpha] = React.useState(1);
     const [zIndex, setZIndex] = React.useState(index);
+
+    const textureRef = useRef(Texture.from(duck));
+
+    // useEffect(() => {
+    //     const texture = Texture.from(duck);
+    //     const {width: imageWidth, height: imageHeight} = texture;
+    //     const pieceWidth = 100;
+    //     const pieceHeight = 100;
+    //
+    //     // Calculate the position and dimensions of the portion of the image to be used for this piece
+    //     const pieceX = x;
+    //     const pieceY = y;
+    //     const pieceRect = new Rectangle(
+    //         pieceX / imageWidth,
+    //         pieceY / imageHeight,
+    //         pieceWidth / imageWidth,
+    //         pieceHeight / imageHeight
+    //     );
+    //
+    //     // Create a new texture that only shows the portion of the image for this piece
+    //     const pieceTexture = new Texture(texture.baseTexture, pieceRect);
+    //     textureRef.current = pieceTexture;
+    // }, [x, y]);
 
     const onBoxMoveCallback = useCallback((outsideEvent) => {
         const {x, y} = outsideEvent.data.global;
@@ -72,8 +95,8 @@ function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, 
             {...props}
             alpha={alpha}
             position={position}
-            texture={Texture.WHITE}
-            // texture={Texture.from(joker)}
+            // texture={Texture.WHITE}
+            texture={textureRef.current}
             width={100}
             height={100}
             zIndex={zIndex}
