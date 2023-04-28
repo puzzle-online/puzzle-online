@@ -24,33 +24,33 @@ function Ball({color}) {
     return <div style={ballStyle}></div>;
 }
 
-function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick}) {
+function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes}) {
     const [roomId, setRoomId] = useState('');
-    const [balls, setBalls] = useState([]);
-    const [clientList, setClientList] = useState([]);
+    const [boxes, setBoxes] = useState([]);
+    const [clients, setClients] = useState([]);
 
-    const [playBallIdRed, setPlayBallIdRed] = useState('');
-    const [playBallIdBlue, setPlayBallIdBlue] = useState('');
-    const [playBallIdGreen, setPlayBallIdGreen] = useState('');
+    // const [playBallIdRed, setPlayBallIdRed] = useState('');
+    // const [playBallIdBlue, setPlayBallIdBlue] = useState('');
+    // const [playBallIdGreen, setPlayBallIdGreen] = useState('');
 
     const handleUpdate = (response) => {
-        setBalls(response.balls);
-        setClientList(response.clientIds);
-        console.log(`Updated room: ${roomId}, balls: ${response.balls}, clients: ${response.clientIds}`);
+        setBoxes(response.boxes);
+        setClients(response.clients);
+        console.log(`Updated room: ${roomId}, clients: ${response.clients}`);
     };
 
     const handleCreate = (response) => {
         setRoomId(response.roomId);
-        setBalls(response.balls);
-        setClientList(response.clientIds);
-        console.log(`Created room: ${response.roomId}, balls: ${response.balls}, clients: ${response.clientIds}`);
+        setBoxes(response.boxes);
+        setClients(response.clients);
+        console.log(`Created room: ${response.roomId}, clients: ${response.clients}`);
     };
 
     const handleJoin = (response) => {
         setRoomId(response.roomId);
-        setBalls(response.balls);
-        setClientList(response.clientIds);
-        console.log(`Joined room: ${response.roomId}, balls: ${response.balls}, clients: ${response.clientIds}`);
+        setBoxes(response.boxes);
+        setClients(response.clients);
+        console.log(`Joined room: ${response.roomId}, balls: ${response.boxes}, clients: ${response.clients}`);
     };
 
     useEffect(() => {
@@ -60,19 +60,19 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick}) {
         console.log('added handleCreate, handleJoin, handleUpdate');
     }, []);
 
-    const playBall = (color) => (e) => {
-        e.preventDefault();
-        sendRequest('play', {
-            roomId: roomId,
-            ball: {
-                ballId: parseInt(color === 'red' ? playBallIdRed : color === 'blue' ? playBallIdBlue : playBallIdGreen),
-                color: color,
-            },
-        });
-    };
-    const playRed = playBall('red');
-    const playBlue = playBall('blue');
-    const playGreen = playBall('green');
+    // const playBall = (color) => (e) => {
+    //     e.preventDefault();
+    //     sendRequest('play', {
+    //         roomId: roomId,
+    //         ball: {
+    //             ballId: parseInt(color === 'red' ? playBallIdRed : color === 'blue' ? playBallIdBlue : playBallIdGreen),
+    //             color: color,
+    //         },
+    //     });
+    // };
+    // const playRed = playBall('red');
+    // const playBlue = playBall('blue');
+    // const playGreen = playBall('green');
 
     return (
         <>
@@ -82,38 +82,38 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick}) {
             <div>
                 Current room ID: {roomId}
             </div>
-            <div>
-                Current clients: {clientList.map((clientId) => (
-                <div key={clientId}>{clientId}</div>
-            ))}
-            </div>
-            <div>
-                {balls && balls.length ? (
-                    <>
-                        {balls.map((ball) => (
-                            <Ball key={ball.ballId} color={ball.color}/>
-                        ))}
-                    </>
-                ) : (
-                    <p>No balls yet</p>
-                )}
-            </div>
-            <form onSubmit={playRed}>
-                <input value={playBallIdRed} onChange={(e) => setPlayBallIdRed(e.target.value)} type="text"
-                       placeholder="Type your message here"/>
-                <button type="submit">Make red</button>
-            </form>
-            <form onSubmit={playBlue}>
-                <input value={playBallIdBlue} onChange={(e) => setPlayBallIdBlue(e.target.value)} type="text"
-                       placeholder="Type your message here"/>
-                <button type="submit">Make blue</button>
-            </form>
-            <form onSubmit={playGreen}>
-                <input value={playBallIdGreen} onChange={(e) => setPlayBallIdGreen(e.target.value)} type="text"
-                       placeholder="Type your message here"/>
-                <button type="submit">Make green</button>
-            </form>
-            <Game sendRequest={sendRequest} roomId={roomId}/>
+            {/*<div>*/}
+            {/*    Current clients: {clients.map((clientId) => (*/}
+            {/*    <div key={clientId}>{clientId}</div>*/}
+            {/*))}*/}
+            {/*</div>*/}
+            {/*<div>*/}
+            {/*    {boxes && boxes.length ? (*/}
+            {/*        <>*/}
+            {/*            {boxes.map((ball) => (*/}
+            {/*                <Ball key={ball.ballId} color={ball.color}/>*/}
+            {/*            ))}*/}
+            {/*        </>*/}
+            {/*    ) : (*/}
+            {/*        <p>No boxes yet</p>*/}
+            {/*    )}*/}
+            {/*</div>*/}
+            {/*<form onSubmit={playRed}>*/}
+            {/*    <input value={playBallIdRed} onChange={(e) => setPlayBallIdRed(e.target.value)} type="text"*/}
+            {/*           placeholder="Type your message here"/>*/}
+            {/*    <button type="submit">Make red</button>*/}
+            {/*</form>*/}
+            {/*<form onSubmit={playBlue}>*/}
+            {/*    <input value={playBallIdBlue} onChange={(e) => setPlayBallIdBlue(e.target.value)} type="text"*/}
+            {/*           placeholder="Type your message here"/>*/}
+            {/*    <button type="submit">Make blue</button>*/}
+            {/*</form>*/}
+            {/*<form onSubmit={playGreen}>*/}
+            {/*    <input value={playBallIdGreen} onChange={(e) => setPlayBallIdGreen(e.target.value)} type="text"*/}
+            {/*           placeholder="Type your message here"/>*/}
+            {/*    <button type="submit">Make green</button>*/}
+            {/*</form>*/}
+            <Game sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients}/>
         </>
     )
 }
