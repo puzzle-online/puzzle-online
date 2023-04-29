@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import {Container, Sprite, Stage, useApp} from "@pixi/react";
+import {OutlineFilter} from '@pixi/filter-outline';
 import {BaseTexture, Rectangle, Texture} from "pixi.js";
 import cursor from "../assets/cursor.png";
 import duck from "../assets/duck.png";
@@ -92,6 +93,13 @@ function DraggableBox(
         });
     }
 
+    let filters = [new OutlineFilter(2, 0x000000)]
+    if (box.state === "solved") {
+        filters = []
+    } else if (box.state === "moving") {
+        filters = [new OutlineFilter(2, 0xff0000)]
+    }
+
     return (
         <Sprite
             {...props}
@@ -105,6 +113,7 @@ function DraggableBox(
             pointerdown={onStart}
             pointerup={onEnd}
             pointerupoutside={onEnd}
+            filters={filters}
         />
     );
 }
