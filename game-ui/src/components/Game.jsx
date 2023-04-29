@@ -9,8 +9,6 @@ const width = 1200;
 const height = 800;
 const backgroundColor = 0x505050;
 
-let index = 1;
-
 function DraggableBox(
     {
         x = 0,
@@ -27,7 +25,6 @@ function DraggableBox(
     const offset = React.useRef({x: 0, y: 0});
     const [position, setPosition] = React.useState({x, y})
     const [alpha, setAlpha] = React.useState(1);
-    const [zIndex, setZIndex] = React.useState(index);
 
     useEffect(() => {
         onOutsideChangePosition();
@@ -56,7 +53,6 @@ function DraggableBox(
             };
 
             setAlpha(0.5);
-            setZIndex(index++);
             setOnBoxMove(() => onBoxMoveCallback);
         } else {
             console.error(`Box ${box.id} is in invalid state ${box.state}`);
@@ -137,6 +133,7 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
     const cursorPositionRef = useRef({x: 0, y: 0});
     const texturesRef = useRef(new Map());
     const draggingBoxRef = useRef(null);
+    const lastZIndexRef = useRef(boxes.length);
 
     const app = useApp();
 
@@ -147,21 +144,19 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
 
     function sendMove() {
         // TODO: don't send if cursor position hasn't changed
-        let cursorPosition = cursorPositionRef.current;
         sendRequest("move", {
             roomId: roomId,
-            box: draggingBoxRef.current,
-            cursor: {x: cursorPosition.x, y: cursorPosition.y},
+            box: {...draggingBoxRef.current, z: lastZIndexRef.current++},
+            cursor: cursorPositionRef.current,
         });
     }
 
     function sendMoveOnRelease(box) {
         draggingBoxRef.current = null;
-        let cursorPosition = cursorPositionRef.current;
         sendRequest("move", {
             roomId: roomId,
-            box: box,
-            cursor: {x: cursorPosition.x, y: cursorPosition.y},
+            box: {...box, z: lastZIndexRef.current++},
+            cursor: cursorPositionRef.current,
         });
     }
 
@@ -217,7 +212,7 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
                 box={box}
                 texture={pieceTexture}
                 sendMoveOnRelease={sendMoveOnRelease}
-                // isCorrectlyPlaced={box.isCorrectlyPlaced}
+                zIndex={box.z}
             />;
         })}
         {clients.map((client) => {
