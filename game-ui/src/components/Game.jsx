@@ -181,7 +181,7 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
 
     function getBoxPositionConsideringCurrentDragging(box) {
         let current = draggingBoxRef.current;
-        return current && current.boxId === box.id ? {
+        return current && current.x === box.id ? {
             x: current.x,
             y: current.y
         } : {x: box.x, y: box.y};
