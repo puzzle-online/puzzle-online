@@ -11,41 +11,12 @@ const backgroundColor = 0x505050;
 let index = 1;
 
 
-function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, boxes, ...props}) {
+function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, boxes, texture, ...props}) {
     const isDragging = React.useRef(false);
     const offset = React.useRef({x: 0, y: 0});
     const [position, setPosition] = React.useState({x, y})
     const [alpha, setAlpha] = React.useState(1);
     const [zIndex, setZIndex] = React.useState(index);
-
-    const texture = Texture.from(duck);
-    console.log("texture ", texture.height, texture.width)
-
-    const mapping = [
-        {id: 0, x: 0, y: 0},
-        {id: 1, x: 100, y: 0},
-        {id: 2, x: 200, y: 0},
-        {id: 3, x: 300, y: 0},
-        {id: 4, x: 0, y: 100},
-        {id: 5, x: 100, y: 100},
-        {id: 6, x: 200, y: 100},
-        {id: 7, x: 300, y: 100},
-        {id: 8, x: 0, y: 200},
-        {id: 9, x: 100, y: 200},
-        {id: 10, x: 200, y: 200},
-        {id: 11, x: 300, y: 200},
-        {id: 12, x: 0, y: 300},
-        {id: 13, x: 100, y: 300},
-        {id: 14, x: 200, y: 300},
-        {id: 15, x: 300, y: 300}
-    ]
-
-    console.log('boxId', boxId)
-    console.log('mapping', mapping[boxId])
-
-    texture.frame = new Rectangle(mapping[boxId].x, mapping[boxId].y, 100, 100);
-
-    console.log("frame:", texture.frame)
 
     const onBoxMoveCallback = useCallback((outsideEvent) => {
         const {x, y} = outsideEvent.data.global;
@@ -134,9 +105,10 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
     // const onBoxMove = useRef(null);
     const [onBoxMove, setOnBoxMove] = useState(null);
     const backlogRef = useRef({cursor: {x: 0, y: 0}, boxes: new Map()});
+    const texturesRef = useRef(new Map());
 
     useEffect(() => {
-        const intervalId = setInterval(sendBacklog, 50);
+        const intervalId = setInterval(sendBacklog, 1000);
         return () => clearInterval(intervalId);
     }, []);
 
@@ -159,6 +131,12 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
         }
     }
 
+    const texture = BaseTexture.from(duck);
+    const amountVertical = 4;
+    const amountHorizontal = 4;
+    const pieceHeight = Math.floor(texture.height / amountVertical);
+    const pieceWidth = Math.floor(texture.width / amountHorizontal);
+
     return <Container
         sortableChildren={true}
         pointermove={movePlayer}
@@ -166,17 +144,32 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
         hitArea={app.screen}
     >
         {boxes.map((box) => {
+            let boxId = box.id;
+            const backlogBox = backlogRef.current.boxes.get(boxId) ?? box;
+            const pieceMapping = {
+                id: boxId,
+                x: (boxId % amountHorizontal) * pieceWidth,
+                y: Math.floor(boxId / amountVertical) * pieceHeight
+            };
+            const rect = new Rectangle(
+                pieceMapping.x,
+                pieceMapping.y,
+                pieceWidth,
+                pieceHeight
+            );
+            const pieceTexture = new Texture(texture, rect);
+            texturesRef.current.set(boxId, pieceTexture);
             return <DraggableBox
-                key={box.id}
+                key={boxId}
                 tint={0xff00ff}
-                x={box.x}
-                y={box.y}
+                x={backlogBox.x}
+                y={backlogBox.y}
                 setOnBoxMove={setOnBoxMove}
-                boxId={box.id}
+                boxId={boxId}
                 boxes={boxes}
-            />
+                texture={pieceTexture}
+            />;
         })}
-        {/*<Cursor position={cursorPosition}/>*/}
         {clients.map((client) => {
             if (client.id === clientId) return null;
             return <Cursor key={client.id} position={client.cursor}/>

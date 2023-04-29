@@ -3,28 +3,7 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import IconButton from "@mui/joy/IconButton";
 import Game from "../Game.jsx";
 
-function Ball({color}) {
-    const ballStyle = {
-        width: '50px',
-        height: '50px',
-        borderRadius: '50%',
-        display: 'inline-block',
-        margin: '10px',
-        backgroundColor: 'white',
-    };
-
-    if (color === 'red') {
-        ballStyle.backgroundColor = 'red';
-    } else if (color === 'blue') {
-        ballStyle.backgroundColor = 'blue';
-    } else if (color === 'green') {
-        ballStyle.backgroundColor = 'green';
-    }
-
-    return <div style={ballStyle}></div>;
-}
-
-function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes, clientId}) {
+function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, clientId}) {
     const [roomId, setRoomId] = useState('');
     const [boxes, setBoxes] = useState([]);
     const [clients, setClients] = useState([]);
@@ -58,21 +37,7 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes, 
         handlers['create'] = handleCreate;
         handlers['join'] = handleJoin;
         console.log('added handleCreate, handleJoin, handleUpdate');
-    }, []);
-
-    // const playBall = (color) => (e) => {
-    //     e.preventDefault();
-    //     sendRequest('play', {
-    //         roomId: roomId,
-    //         ball: {
-    //             ballId: parseInt(color === 'red' ? playBallIdRed : color === 'blue' ? playBallIdBlue : playBallIdGreen),
-    //             color: color,
-    //         },
-    //     });
-    // };
-    // const playRed = playBall('red');
-    // const playBlue = playBall('blue');
-    // const playGreen = playBall('green');
+    }, [roomId]);
 
     return (
         <>
@@ -82,38 +47,10 @@ function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, defaultBoxes, 
             <div>
                 Current room ID: {roomId}
             </div>
-            {/*<div>*/}
-            {/*    Current clients: {clients.map((clientId) => (*/}
-            {/*    <div key={clientId}>{clientId}</div>*/}
-            {/*))}*/}
-            {/*</div>*/}
-            {/*<div>*/}
-            {/*    {boxes && boxes.length ? (*/}
-            {/*        <>*/}
-            {/*            {boxes.map((ball) => (*/}
-            {/*                <Ball key={ball.ballId} color={ball.color}/>*/}
-            {/*            ))}*/}
-            {/*        </>*/}
-            {/*    ) : (*/}
-            {/*        <p>No boxes yet</p>*/}
-            {/*    )}*/}
-            {/*</div>*/}
-            {/*<form onSubmit={playRed}>*/}
-            {/*    <input value={playBallIdRed} onChange={(e) => setPlayBallIdRed(e.target.value)} type="text"*/}
-            {/*           placeholder="Type your message here"/>*/}
-            {/*    <button type="submit">Make red</button>*/}
-            {/*</form>*/}
-            {/*<form onSubmit={playBlue}>*/}
-            {/*    <input value={playBallIdBlue} onChange={(e) => setPlayBallIdBlue(e.target.value)} type="text"*/}
-            {/*           placeholder="Type your message here"/>*/}
-            {/*    <button type="submit">Make blue</button>*/}
-            {/*</form>*/}
-            {/*<form onSubmit={playGreen}>*/}
-            {/*    <input value={playBallIdGreen} onChange={(e) => setPlayBallIdGreen(e.target.value)} type="text"*/}
-            {/*           placeholder="Type your message here"/>*/}
-            {/*    <button type="submit">Make green</button>*/}
-            {/*</form>*/}
-            <Game sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients} clientId={clientId}/>
+            {roomId !== '' ?
+                <Game sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients} clientId={clientId}/> :
+                <div>Creating room...</div>
+            }
         </>
     )
 }
