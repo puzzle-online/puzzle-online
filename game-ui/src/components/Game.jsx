@@ -133,18 +133,30 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
     const app = useApp();
     // const onBoxMove = useRef(null);
     const [onBoxMove, setOnBoxMove] = useState(null);
+    const backlogRef = useRef({cursor: {x: 0, y: 0}, boxes: new Map()});
+
+    useEffect(() => {
+        const intervalId = setInterval(sendBacklog, 50);
+        return () => clearInterval(intervalId);
+    }, []);
+
+    function sendBacklog() {
+        const backlog = backlogRef.current;
+        if (backlog.boxes.length > 0 || backlog.cursor.x !== cursorPosition.x || backlog.cursor.y !== cursorPosition.y) {
+            const boxes = Array.from(backlog.boxes.entries()).map(([id, {x, y}]) => ({id, x, y}));
+            sendRequest('move', {cursor: backlog.cursor, boxes, roomId: roomId});
+            backlogRef.current = {cursor: backlog.cursor, boxes: new Map()};
+        }
+    }
 
     function movePlayer(e) {
         const {x, y} = e.data.global
         setCursorPosition({x: x, y: y});
-        // TODO: use backlog of events instead of sending every event (or send on onEnd)
-        const move = {cursor: {x: x, y: y}, roomId: roomId};
-        move.box = null;
+        backlogRef.current.cursor = {x: x, y: y};
         if (onBoxMove) {
             const {boxId, boxX, boxY} = onBoxMove(e);
-            move.box = {id: boxId, x: boxX, y: boxY};
+            backlogRef.current.boxes.set(boxId, {x: boxX, y: boxY});
         }
-        sendRequest('move', move);
     }
 
     return <Container
