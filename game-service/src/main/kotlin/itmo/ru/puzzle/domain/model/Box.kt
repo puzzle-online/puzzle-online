@@ -5,7 +5,7 @@ import kotlin.math.absoluteValue
 // TODO: add state IN_PLACE
 enum class State { MOVING, RELEASED, SOLVED }
 
-data class Box(val id: Int, var x: Float, var y: Float, var state: State) {
+data class Box(val id: Int, var x: Float, var y: Float, var z: Int, var state: State) {
     // TODO: remove hardcoded values
     var correctX: Float = 400F + (id % 4) * 100
     var correctY: Float = 200F + (id / 4) * 100
