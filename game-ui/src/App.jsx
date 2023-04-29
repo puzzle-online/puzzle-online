@@ -87,6 +87,7 @@ function Pages() {
                     id: i,
                     x: Math.floor((Math.random() < 0.5 ? x : x + 400 + 400)),
                     y: Math.floor(y),
+                    state: "released", // TODO: reconsider
                 });
             }),
         });

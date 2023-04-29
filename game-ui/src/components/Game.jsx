@@ -10,7 +10,6 @@ const backgroundColor = 0x505050;
 
 let index = 1;
 
-
 function DraggableBox(
     {
         x = 0,
@@ -59,7 +58,7 @@ function DraggableBox(
             setZIndex(index++);
             setOnBoxMove(() => onBoxMoveCallback);
         } else {
-            console.error("unknown box state");
+            console.error(`Box ${box.id} is in invalid state ${box.state}`);
         }
     }
 
@@ -160,8 +159,6 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
     function movePlayer(e) {
         const {x, y} = e.data.global
         cursorPositionRef.current = {x: x, y: y};
-        console.log("CURSOR POSITION1", x, y);
-        console.log("CURSOR POSITION2", cursorPositionRef.current);
         if (onBoxMove) {
             draggingBoxRef.current = onBoxMove(e); // {id, x, y, state}
         }
