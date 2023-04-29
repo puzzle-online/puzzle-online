@@ -3,7 +3,7 @@ package itmo.ru.puzzle.domain.model
 import kotlin.math.absoluteValue
 
 // TODO: add state IN_PLACE
-enum class State { MOVING, RELEASED }
+enum class State { MOVING, RELEASED, SOLVED }
 
 data class Box(val id: Int, var x: Float, var y: Float, var state: State) {
     // TODO: remove hardcoded values
@@ -17,5 +17,6 @@ data class Box(val id: Int, var x: Float, var y: Float, var state: State) {
                 val dy = y - correctY
                 dx.absoluteValue < 10 && dy.absoluteValue < 10
             }
+            State.SOLVED -> true
         }
 }

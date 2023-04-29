@@ -70,12 +70,16 @@ class GameService(
                         if (updateBox.isCorrectlyPlaced) {
                             serverBox.x = serverBox.correctX
                             serverBox.y = serverBox.correctY
-                            serverBox.state = updateBox.state
+                            serverBox.state = State.SOLVED
                         } else {
                             serverBox.x = updateBox.x
                             serverBox.y = updateBox.y
                             serverBox.state = updateBox.state
                         }
+                    }
+
+                    State.SOLVED -> {
+                        // do nothing
                     }
                 }
             }
