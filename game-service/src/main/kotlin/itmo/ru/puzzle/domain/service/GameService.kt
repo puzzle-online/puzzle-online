@@ -35,19 +35,23 @@ class GameService(
         logger.info("All connected clients: ${clientRepository.getAllClients()}")
     }
 
-    fun handleMove(
+    suspend fun handleMove(
         clientId: String,
         roomId: String,
         updateCursor: Cursor,
         updateBoxes: List<Box>,
+        session: WebSocketServerSession
     ) {
-        val room = roomRepository.get(roomId)
-        val client = clientRepository.get(clientId)
-
-        if (room == null || client == null) {
-            logger.error("Room or client not found")
-            return
+        if (!roomRepository.contains(roomId)) {
+            session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
         }
+
+        if (!clientRepository.contains(clientId)) {
+            session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Client $clientId not found"))
+        }
+
+        val room = roomRepository.get(roomId)!!
+        val client = clientRepository.get(clientId)!!
 
         client.cursor = updateCursor
         if (updateBoxes.isNotEmpty()) {

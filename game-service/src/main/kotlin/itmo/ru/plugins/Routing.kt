@@ -135,7 +135,7 @@ fun Application.configureRouting() {
                                 "Received move request $moveRequest"
                             )
 
-                            gameService.handleMove(moveRequest.clientId, moveRequest.roomId, cursor, box)
+                            gameService.handleMove(moveRequest.clientId, moveRequest.roomId, cursor, box, this)
                         }
 
                         else -> this@configureRouting.log.error("Unknown method ${data.method}")
