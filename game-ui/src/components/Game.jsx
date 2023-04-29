@@ -18,28 +18,34 @@ function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, 
     const [alpha, setAlpha] = React.useState(1);
     const [zIndex, setZIndex] = React.useState(index);
 
-    const textureRef = useRef(Texture.from(duck));
+    const texture = Texture.from(duck);
+    console.log("texture ", texture.height, texture.width)
 
-    // useEffect(() => {
-    //     const texture = Texture.from(duck);
-    //     const {width: imageWidth, height: imageHeight} = texture;
-    //     const pieceWidth = 100;
-    //     const pieceHeight = 100;
-    //
-    //     // Calculate the position and dimensions of the portion of the image to be used for this piece
-    //     const pieceX = x;
-    //     const pieceY = y;
-    //     const pieceRect = new Rectangle(
-    //         pieceX / imageWidth,
-    //         pieceY / imageHeight,
-    //         pieceWidth / imageWidth,
-    //         pieceHeight / imageHeight
-    //     );
-    //
-    //     // Create a new texture that only shows the portion of the image for this piece
-    //     const pieceTexture = new Texture(texture.baseTexture, pieceRect);
-    //     textureRef.current = pieceTexture;
-    // }, [x, y]);
+    const mapping = [
+        {id: 0, x: 0, y: 0},
+        {id: 1, x: 100, y: 0},
+        {id: 2, x: 200, y: 0},
+        {id: 3, x: 300, y: 0},
+        {id: 4, x: 0, y: 100},
+        {id: 5, x: 100, y: 100},
+        {id: 6, x: 200, y: 100},
+        {id: 7, x: 300, y: 100},
+        {id: 8, x: 0, y: 200},
+        {id: 9, x: 100, y: 200},
+        {id: 10, x: 200, y: 200},
+        {id: 11, x: 300, y: 200},
+        {id: 12, x: 0, y: 300},
+        {id: 13, x: 100, y: 300},
+        {id: 14, x: 200, y: 300},
+        {id: 15, x: 300, y: 300}
+    ]
+
+    console.log('boxId', boxId)
+    console.log('mapping', mapping[boxId])
+
+    texture.frame = new Rectangle(mapping[boxId].x, mapping[boxId].y, 100, 100);
+
+    console.log("frame:", texture.frame)
 
     const onBoxMoveCallback = useCallback((outsideEvent) => {
         const {x, y} = outsideEvent.data.global;
@@ -96,7 +102,7 @@ function DraggableBox({tint, x = 0, y = 0, cursorPosition, setOnBoxMove, boxId, 
             alpha={alpha}
             position={position}
             // texture={Texture.WHITE}
-            texture={textureRef.current}
+            texture={texture}
             width={100}
             height={100}
             zIndex={zIndex}
@@ -170,7 +176,8 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
 function Game({sendRequest, roomId, boxes, clients, clientId}) {
     return (
         <Stage width={width} height={height} options={{backgroundColor}}>
-            <ContainerWrapper sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients} clientId={clientId}/>
+            <ContainerWrapper sendRequest={sendRequest} roomId={roomId} boxes={boxes} clients={clients}
+                              clientId={clientId}/>
         </Stage>
     );
 }
