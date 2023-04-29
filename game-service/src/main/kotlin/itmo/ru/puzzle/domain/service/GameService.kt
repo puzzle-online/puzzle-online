@@ -44,10 +44,12 @@ class GameService(
     ) {
         if (!roomRepository.contains(roomId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
+            return
         }
 
         if (!clientRepository.contains(clientId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Client $clientId not found"))
+            return
         }
 
         val room = roomRepository.get(roomId)!!
