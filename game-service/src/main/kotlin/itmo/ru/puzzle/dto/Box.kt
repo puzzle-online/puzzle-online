@@ -5,7 +5,7 @@ import itmo.ru.puzzle.domain.model.State
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BoxDTO(val id: Int, val x: Float, val y: Float, val state: String = "released")
+data class BoxDTO(val id: Int, val x: Float, val y: Float, val state: String)
 
 fun BoxDTO.toBox() = Box(id, x, y, State.valueOf(state.uppercase()))
 
