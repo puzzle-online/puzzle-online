@@ -40,7 +40,7 @@ class GameService(
         clientId: String,
         roomId: String,
         updateCursor: Cursor,
-        updateBoxes: List<Box>,
+        updateBox: Box?,
         session: WebSocketServerSession
     ) {
         if (!roomRepository.contains(roomId)) {
@@ -57,11 +57,20 @@ class GameService(
         val client = clientRepository.get(clientId)!!
 
         client.cursor = updateCursor
-        if (updateBoxes.isNotEmpty()) {
-            updateBoxes.forEach { updateBox ->
-                room.boxes.find { it.id == updateBox.id }?.let { serverBox ->
-                    serverBox.x = updateBox.x
-                    serverBox.y = updateBox.y
+        if (updateBox != null) {
+            room.boxes.find { it.id == updateBox.id }?.let { serverBox ->
+                when (serverBox.state) {
+                    State.MOVING -> {
+                        serverBox.x = updateBox.x
+                        serverBox.y = updateBox.y
+                    }
+
+                    State.RELEASED -> {
+                        if (updateBox.isCorrectlyPlaced) {
+                            serverBox.x = serverBox.correctX
+                            serverBox.y = serverBox.correctY
+                        }
+                    }
                 }
             }
         }

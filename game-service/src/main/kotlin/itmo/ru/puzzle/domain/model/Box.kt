@@ -1,0 +1,20 @@
+package itmo.ru.puzzle.domain.model
+
+import kotlin.math.absoluteValue
+
+enum class State { MOVING, RELEASED }
+
+data class Box(val id: Int, var x: Float, var y: Float, val state: State) {
+    // TODO: remove hardcoded values
+    var correctX: Float = 400F + (id % 4) * 200 + 100
+    var correctY: Float = 200F + (id / 4) * 200 + 100
+    val isCorrectlyPlaced: Boolean
+        get() = when (state) {
+            State.MOVING -> false
+            State.RELEASED -> {
+                val dx = x - correctX
+                val dy = y - correctY
+                dx.absoluteValue < 10 && dy.absoluteValue < 10
+            }
+        }
+}

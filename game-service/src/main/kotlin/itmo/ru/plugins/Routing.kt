@@ -9,6 +9,8 @@ import itmo.ru.puzzle.domain.repository.ClientRepository
 import itmo.ru.puzzle.domain.repository.RoomRepository
 import itmo.ru.puzzle.domain.service.GameService
 import itmo.ru.puzzle.dto.request.*
+import itmo.ru.puzzle.dto.toBall
+import itmo.ru.puzzle.dto.toCursor
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
@@ -102,7 +104,7 @@ fun Application.configureRouting() {
                             val playRequest = converter!!.deserialize<PlayRequest>(frame)
 
                             // TODO: maybe remove this
-                            val ball = playRequest.toBall()
+                            val ball = playRequest.ball.toBall()
 
                             this@configureRouting.log.info(
                                 "Received set request for room ${playRequest.roomId} and ball ${ball.id} with color ${ball.color} from client ${playRequest.clientId}"
@@ -128,7 +130,7 @@ fun Application.configureRouting() {
                         Method.MOVE -> {
                             val moveRequest = converter!!.deserialize<MoveRequest>(frame)
 
-                            val box = moveRequest.boxes.map { it.toBox() }
+                            val box = moveRequest.boxes?.toBox()
                             val cursor = moveRequest.cursor.toCursor()
 
                             this@configureRouting.log.info(
