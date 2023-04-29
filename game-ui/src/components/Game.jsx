@@ -122,6 +122,7 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
     const app = useApp();
     const [onBoxMove, setOnBoxMove] = useState(null);
     const texturesRef = useRef(new Map());
+    const draggingBoxRef = useRef(null);
 
     useEffect(() => {
         const intervalId = setInterval(sendMove, 1000);
