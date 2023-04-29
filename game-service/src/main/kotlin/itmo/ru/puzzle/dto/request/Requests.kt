@@ -13,7 +13,7 @@ data class JoinRequest(val clientId: String, val roomId: String)
 data class PlayRequest(val clientId: String, val roomId: String, val ball: BallDTO)
 
 @Serializable
-data class MoveRequest(val clientId: String, val roomId: String, val cursor: CursorDTO, val box: BoxDTO?)
+data class MoveRequest(val clientId: String, val roomId: String, val cursor: CursorDTO, val boxes: List<BoxDTO>)
 
 @Serializable
 data class CreateRequest(val clientId: String, val boxes: List<BoxDTO>)

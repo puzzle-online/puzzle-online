@@ -38,8 +38,8 @@ class GameService(
     fun handleMove(
         clientId: String,
         roomId: String,
-        cursor: Cursor,
-        box: Box?,
+        updateCursor: Cursor,
+        updateBoxes: List<Box>,
     ) {
         val room = roomRepository.get(roomId)
         val client = clientRepository.get(clientId)
@@ -49,11 +49,13 @@ class GameService(
             return
         }
 
-        client.cursor = cursor
-        if (box != null) {
-            room.boxes.find { it.id == box.id }?.let {
-                it.x = box.x
-                it.y = box.y
+        client.cursor = updateCursor
+        if (updateBoxes.isNotEmpty()) {
+            updateBoxes.forEach { updateBox ->
+                room.boxes.find { it.id == updateBox.id }?.let { serverBox ->
+                    serverBox.x = updateBox.x
+                    serverBox.y = updateBox.y
+                }
             }
         }
     }
