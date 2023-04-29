@@ -59,6 +59,9 @@ class GameService(
         client.cursor = updateCursor
         if (updateBox != null) {
             room.boxes.find { it.id == updateBox.id }?.let { serverBox ->
+                if (serverBox.state == State.SOLVED) {
+                    return
+                }
                 when (updateBox.state) {
                     State.MOVING -> {
                         serverBox.x = updateBox.x
