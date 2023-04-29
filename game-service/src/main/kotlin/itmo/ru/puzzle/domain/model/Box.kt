@@ -7,8 +7,8 @@ enum class State { MOVING, RELEASED }
 
 data class Box(val id: Int, var x: Float, var y: Float, var state: State) {
     // TODO: remove hardcoded values
-    var correctX: Float = 400F + (id % 4) * 200 + 100
-    var correctY: Float = 200F + (id / 4) * 200 + 100
+    var correctX: Float = 400F + (id % 4) * 100
+    var correctY: Float = 200F + (id / 4) * 100
     val isCorrectlyPlaced: Boolean
         get() = when (state) {
             State.MOVING -> false
