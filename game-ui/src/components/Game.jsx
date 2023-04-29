@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
-import {Sprite, Stage, Container, useApp} from "@pixi/react";
-import {Rectangle, Texture} from "pixi.js";
+import {Container, Sprite, Stage, useApp} from "@pixi/react";
+import {BaseTexture, Rectangle, Texture} from "pixi.js";
 import cursor from "../assets/cursor.png";
 import duck from "../assets/duck.png";
 
