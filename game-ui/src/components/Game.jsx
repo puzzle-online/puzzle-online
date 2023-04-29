@@ -16,8 +16,7 @@ function DraggableBox(
         x = 0,
         y = 0,
         setOnBoxMove,
-        boxId,
-        boxes,
+        box,
         texture,
         setCurrentlyDragging,
         sendMoveOnRelease,
@@ -32,7 +31,7 @@ function DraggableBox(
 
     useEffect(() => {
         onOutsideChangePosition();
-    }, [boxes]);
+    }, [box]);
 
     function onOutsideChangePosition() {
         if (!isDragging.current) {
@@ -67,7 +66,7 @@ function DraggableBox(
                 y: newY,
             });
             return {
-                id: boxId,
+                id: box.id,
                 x: newX,
                 y: newY,
                 state: "moving",
@@ -80,7 +79,7 @@ function DraggableBox(
         setOnBoxMove(null);
         setAlpha(1);
         sendMoveOnRelease({
-            id: boxId,
+            id: box.id,
             x: position.x,
             y: position.y,
             state: "released",
@@ -118,11 +117,13 @@ function Cursor({position}) {
 }
 
 function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
-    const [cursorPosition, setCursorPosition] = useState({x: 0, y: 0});
-    const app = useApp();
     const [onBoxMove, setOnBoxMove] = useState(null);
+
+    const cursorPositionRef = useRef({x: 0, y: 0});
     const texturesRef = useRef(new Map());
     const draggingBoxRef = useRef(null);
+
+    const app = useApp();
 
     useEffect(() => {
         const intervalId = setInterval(sendMove, 1000);
@@ -131,25 +132,29 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
 
     function sendMove() {
         // TODO: don't send if cursor position hasn't changed
+        let cursorPosition = cursorPositionRef.current;
         sendRequest("move", {
             roomId: roomId,
             box: draggingBoxRef.current,
-            cursor: cursorPosition,
+            cursor: {x: cursorPosition.x, y: cursorPosition.y},
         });
     }
 
     function sendMoveOnRelease(box) {
         draggingBoxRef.current = null;
+        let cursorPosition = cursorPositionRef.current;
         sendRequest("move", {
             roomId: roomId,
             box: box,
-            cursor: cursorPosition,
+            cursor: {x: cursorPosition.x, y: cursorPosition.y},
         });
     }
 
     function movePlayer(e) {
         const {x, y} = e.data.global
-        setCursorPosition({x: x, y: y});
+        cursorPositionRef.current = {x: x, y: y};
+        console.log("CURSOR POSITION1", x, y);
+        console.log("CURSOR POSITION2", cursorPositionRef.current);
         if (onBoxMove) {
             draggingBoxRef.current = onBoxMove(e); // {id, x, y, state}
         }
@@ -196,8 +201,7 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
                 x={boxPos.x}
                 y={boxPos.y}
                 setOnBoxMove={setOnBoxMove}
-                boxId={boxId}
-                boxes={boxes} // TODO: boxes -> box
+                box={box}
                 texture={pieceTexture}
                 sendMoveOnRelease={sendMoveOnRelease}
                 // isCorrectlyPlaced={box.isCorrectlyPlaced}
