@@ -3,6 +3,7 @@ package itmo.ru.puzzle.domain.service
 import io.ktor.server.websocket.*
 import io.ktor.util.logging.*
 import io.ktor.websocket.*
+import itmo.ru.ROOM_UPDATE_RESPONSE_INTERVAL
 import itmo.ru.plugins.Connection
 import itmo.ru.plugins.getUUID
 import itmo.ru.puzzle.domain.model.*
@@ -85,7 +86,7 @@ class GameService(
                 room.clients.forEach { client ->
                     connections[client.id]?.session?.sendSerialized(room.toUpdateResponse())
                 }
-                delay(50)
+                delay(ROOM_UPDATE_RESPONSE_INTERVAL)
             }
         }
 
