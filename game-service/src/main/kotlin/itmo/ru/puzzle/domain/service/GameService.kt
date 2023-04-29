@@ -63,12 +63,14 @@ class GameService(
                     State.MOVING -> {
                         serverBox.x = updateBox.x
                         serverBox.y = updateBox.y
+                        serverBox.state = updateBox.state
                     }
 
                     State.RELEASED -> {
                         if (updateBox.isCorrectlyPlaced) {
                             serverBox.x = serverBox.correctX
                             serverBox.y = serverBox.correctY
+                            serverBox.state = updateBox.state
                         }
                     }
                 }
