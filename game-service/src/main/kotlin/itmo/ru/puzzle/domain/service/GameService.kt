@@ -59,7 +59,7 @@ class GameService(
         client.cursor = updateCursor
         if (updateBox != null) {
             room.boxes.find { it.id == updateBox.id }?.let { serverBox ->
-                when (serverBox.state) {
+                when (updateBox.state) {
                     State.MOVING -> {
                         serverBox.x = updateBox.x
                         serverBox.y = updateBox.y
@@ -70,6 +70,10 @@ class GameService(
                         if (updateBox.isCorrectlyPlaced) {
                             serverBox.x = serverBox.correctX
                             serverBox.y = serverBox.correctY
+                            serverBox.state = updateBox.state
+                        } else {
+                            serverBox.x = updateBox.x
+                            serverBox.y = updateBox.y
                             serverBox.state = updateBox.state
                         }
                     }
