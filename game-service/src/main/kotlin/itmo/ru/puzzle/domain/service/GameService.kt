@@ -98,10 +98,12 @@ class GameService(
     suspend fun join(clientId: String, roomId: String, session: WebSocketServerSession) {
         if (!roomRepository.contains(roomId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
+            return
         }
 
         if (!clientRepository.contains(clientId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Client $clientId not found"))
+            return
         }
 
         val room = roomRepository.get(roomId)!!
@@ -119,6 +121,7 @@ class GameService(
     suspend fun play(roomId: String, ball: Ball, session: WebSocketServerSession) {
         if (!roomRepository.contains(roomId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
+            return
         }
 
         val room = roomRepository.get(roomId)!!
@@ -130,10 +133,12 @@ class GameService(
     suspend fun leave(clientId: String, roomId: String, session: WebSocketServerSession) {
         if (!clientRepository.contains(clientId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Client $clientId not found"))
+            return
         }
 
         if (!roomRepository.contains(roomId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
+            return
         }
 
         val room = roomRepository.get(roomId)!!
