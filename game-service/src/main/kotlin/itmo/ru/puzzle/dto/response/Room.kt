@@ -3,12 +3,14 @@ package itmo.ru.puzzle.dto.response
 import itmo.ru.plugins.Method
 import itmo.ru.plugins.Response
 import itmo.ru.puzzle.domain.model.Room
+import itmo.ru.puzzle.dto.BoxDTO
+import itmo.ru.puzzle.dto.toResponse
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class CreateResponse(
     val roomId: String,
-    val boxes: List<BoxResponseDTO>,
+    val boxes: List<BoxDTO>,
     val clients: List<ClientCursorUpdateDTO>,
 ) : Response(Method.CREATE)
 
@@ -21,7 +23,7 @@ fun Room.toCreateResponse() = CreateResponse(
 @Serializable
 data class JoinResponse(
     val roomId: String,
-    val boxes: List<BoxResponseDTO>,
+    val boxes: List<BoxDTO>,
     val clients: List<ClientCursorUpdateDTO>,
 ) : Response(Method.JOIN)
 
@@ -46,7 +48,7 @@ data class GetRoomsResponse(
 
 @Serializable
 data class UpdateResponse(
-    val boxes: List<BoxResponseDTO>,
+    val boxes: List<BoxDTO>,
     val clients: List<ClientCursorUpdateDTO>,
 ) : Response(Method.UPDATE)
 

@@ -10,6 +10,7 @@ import itmo.ru.puzzle.domain.repository.RoomRepository
 import itmo.ru.puzzle.domain.service.GameService
 import itmo.ru.puzzle.dto.request.*
 import itmo.ru.puzzle.dto.toBall
+import itmo.ru.puzzle.dto.toBox
 import itmo.ru.puzzle.dto.toCursor
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

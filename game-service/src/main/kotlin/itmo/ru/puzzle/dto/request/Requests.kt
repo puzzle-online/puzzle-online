@@ -1,6 +1,7 @@
 package itmo.ru.puzzle.dto.request
 
 import itmo.ru.puzzle.dto.BallDTO
+import itmo.ru.puzzle.dto.BoxDTO
 import itmo.ru.puzzle.dto.CursorDTO
 import kotlinx.serialization.Serializable
 
@@ -18,8 +19,8 @@ data class MoveRequest(
     val clientId: String,
     val roomId: String,
     val cursor: CursorDTO,
-    val box: BoxRequestDTO?
+    val box: BoxDTO?
 )
 
 @Serializable
-data class CreateRequest(val clientId: String, val boxes: List<BoxRequestDTO>)
+data class CreateRequest(val clientId: String, val boxes: List<BoxDTO>)
