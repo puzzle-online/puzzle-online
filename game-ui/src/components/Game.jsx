@@ -104,7 +104,7 @@ function DraggableBox(
             texture={texture}
             width={100}
             height={100}
-            zIndex={zIndex}
+            zIndex={box.z}
             eventMode='static'
             pointerdown={onStart}
             pointerup={onEnd}
@@ -144,9 +144,10 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
 
     function sendMove() {
         // TODO: don't send if cursor position hasn't changed
+        const draggingBox = draggingBoxRef.current;
         sendRequest("move", {
             roomId: roomId,
-            box: {...draggingBoxRef.current, z: lastZIndexRef.current++},
+            box: draggingBox && {...draggingBox, z: lastZIndexRef.current++},
             cursor: cursorPositionRef.current,
         });
     }
