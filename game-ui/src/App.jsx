@@ -80,11 +80,15 @@ function Pages() {
 
     const handleCreateButtonClick = () => {
         sendRequest('create', {
-            boxes: [...Array(16)].map((_, i) => ({
-                id: i,
-                x: Math.floor(Math.random() * 12) * 100,
-                y: Math.floor(Math.random() * 8) * 100,
-            })),
+            boxes: [...Array(16)].map((_, i) => {
+                let x = Math.random() * 300;
+                let y = Math.random() * 700;
+                return ({
+                    id: i,
+                    x: Math.floor((Math.random() < 0.5 ? x : x + 400 + 400)),
+                    y: Math.floor(y),
+                });
+            }),
         });
         setPage('room');
     }
