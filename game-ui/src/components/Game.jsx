@@ -114,8 +114,8 @@ function Cursor({position}) {
         <Sprite
             position={position}
             texture={Texture.from(cursor)}
-            width={30}
-            height={30}
+            width={50}
+            height={50}
             eventMode='none'
             zIndex={9999}
         />
@@ -131,7 +131,7 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
     function movePlayer(e) {
         const {x, y} = e.data.global
         setCursorPosition({x: x, y: y});
-        // TODO: use backlog of events instead of sending every event
+        // TODO: use backlog of events instead of sending every event (or send on onEnd)
         const move = {cursor: {x: x, y: y}, roomId: roomId};
         move.box = null;
         if (onBoxMove) {
