@@ -81,7 +81,7 @@ class GameService(
                         }
                     }
 
-                    State.SOLVED -> logger.info("Unreachable branch: Box ${serverBox.id} state is SOLVED.")
+                    State.SOLVED -> logger.error("Unreachable branch: Box ${serverBox.id} state is SOLVED.")
                 }
             }
         }
