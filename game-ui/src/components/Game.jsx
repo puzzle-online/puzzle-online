@@ -43,17 +43,24 @@ function DraggableBox(
     }
 
     function onStart(e) {
-        const {x, y} = e.data.global;
-        isDragging.current = true;
+        if (box.state === "moving" || box.state === "solved") {
+            return
+        }
+        if (box.state === "released") {
+            isDragging.current = true;
 
-        offset.current = {
-            x: x - position.x,
-            y: y - position.y
-        };
+            const {x, y} = e.data.global;
+            offset.current = {
+                x: x - position.x,
+                y: y - position.y
+            };
 
-        setAlpha(0.5);
-        setZIndex(index++);
-        setOnBoxMove(() => onBoxMoveCallback);
+            setAlpha(0.5);
+            setZIndex(index++);
+            setOnBoxMove(() => onBoxMoveCallback);
+        } else {
+            console.error("unknown box state");
+        }
     }
 
     const onBoxMoveCallback = useCallback((outsideEvent) => {
