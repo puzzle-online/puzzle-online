@@ -153,9 +153,6 @@ class GameService(
 
     private fun Room.removeClient(client: Client) {
         logger.debug("Clients before removing {}: {}", client.id, this.clients)
-        logger.debug("Removing client {}", client)
-        logger.debug("Equal {}", client === this.clients.first())
-        logger.debug("Contains {}", this.clients.contains(client))
 
         this.clients.remove(client)
         client.cursor = null
