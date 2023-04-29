@@ -18,7 +18,7 @@ data class MoveRequest(
     val clientId: String,
     val roomId: String,
     val cursor: CursorDTO,
-    val boxes: BoxRequestDTO?
+    val box: BoxRequestDTO?
 )
 
 @Serializable
