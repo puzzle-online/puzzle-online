@@ -42,7 +42,7 @@ function Pages() {
         };
         newWs.onmessage = handleIncomingMessage
         newWs.onclose = () => {
-            console.log('WebSocket disconnected');
+            console.error('WebSocket disconnected');
             connect();
         };
         setWs(newWs);
