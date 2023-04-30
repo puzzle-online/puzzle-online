@@ -160,7 +160,7 @@ function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick,
             spacing={2}
         >
             <TopBar onBackButtonClick={onBackButtonClick} onRefreshButtonClick={onRefreshButtonClick}/>
-            <Rooms rooms={rooms} selectedRoomId={selectedRoomId} updateSelectedRoomId={setSelectedRoomId}/>
+            {rooms ? <Rooms rooms={rooms} selectedRoomId={selectedRoomId} updateSelectedRoomId={setSelectedRoomId}/> : "Loading..."}
             <Actions selectedRoomId={selectedRoomId} onJoinButtonClick={onJoinButtonClick} onCreateButtonClick={onCreateButtonClick}/>
         </Stack>
     )
