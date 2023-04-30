@@ -1,7 +1,7 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
-import {Container, Sprite, Stage, useApp} from "@pixi/react";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {Container, Sprite, Stage, Text, useApp} from "@pixi/react";
 import {OutlineFilter} from '@pixi/filter-outline';
-import {BaseTexture, Rectangle, Texture} from "pixi.js";
+import {BaseTexture, Rectangle, Texture, TextStyle} from "pixi.js";
 import cursor from "../assets/cursor.png";
 import duck from "../assets/duck.png";
 
@@ -21,10 +21,10 @@ function DraggableBox(
         ...props
     }
 ) {
-    const isDragging = React.useRef(false);
-    const offset = React.useRef({x: 0, y: 0});
-    const [position, setPosition] = React.useState({x, y})
-    const [alpha, setAlpha] = React.useState(1);
+    const isDragging = useRef(false);
+    const offset = useRef({x: 0, y: 0});
+    const [position, setPosition] = useState({x, y})
+    const [alpha, setAlpha] = useState(1);
 
     useEffect(() => {
         onOutsideChangePosition();
@@ -116,19 +116,26 @@ function DraggableBox(
 
 function Cursor({position, nickname}) {
     return (
-        <Container position={position}>
+        <Container position={position} zIndex={99999999}>
             <Sprite
                 texture={Texture.from(cursor)}
                 width={50}
                 height={50}
                 eventMode='none'
-                zIndex={99999999}
             />
             <Text
                 text={nickname}
-                style={{ fill: '#FFFFFF', fontSize: 16 }}
+                // beatify font
+                style={
+                    new TextStyle({
+                        fontSize: 16,
+                        fill: '#ffffff',
+                        stroke: '#000000',
+                        strokeThickness: 5,
+                    })
+                }
                 anchor={[0.5, 0.5]}
-                position={[50, -30]}
+                position={[50, 50]}
             />
         </Container>
     );
