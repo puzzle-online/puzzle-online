@@ -134,7 +134,7 @@ function Actions({selectedRoomId, onJoinButtonClick, onCreateButtonClick}) {
 
 function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick, onCreateButtonClick}) {
     const [selectedRoomId, setSelectedRoomId] = useState('');
-    const [rooms, setRooms] = useState([]);
+    const [rooms, setRooms] = useState(null);
 
     // TODO: save event handlers if ws socket loss occurs and add all listeners on ws socket open
     useEffect(() => {
