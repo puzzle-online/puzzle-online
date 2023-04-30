@@ -152,6 +152,14 @@ function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick,
         console.log(`Rooms: ${response.rooms}`);
     }
 
+    let roomsDOM;
+    if (rooms === null) {
+        roomsDOM = "Loading...";
+    } else if (rooms.length === 0) {
+        roomsDOM = "No rooms available, create one!";
+    } else {
+        roomsDOM = <Rooms rooms={rooms} selectedRoomId={selectedRoomId} updateSelectedRoomId={setSelectedRoomId}/>;
+    }
     return (
         <Stack
             direction="column"
@@ -160,7 +168,7 @@ function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick,
             spacing={2}
         >
             <TopBar onBackButtonClick={onBackButtonClick} onRefreshButtonClick={onRefreshButtonClick}/>
-            {rooms ? <Rooms rooms={rooms} selectedRoomId={selectedRoomId} updateSelectedRoomId={setSelectedRoomId}/> : "Loading..."}
+            {roomsDOM}
             <Actions selectedRoomId={selectedRoomId} onJoinButtonClick={onJoinButtonClick} onCreateButtonClick={onCreateButtonClick}/>
         </Stack>
     )
