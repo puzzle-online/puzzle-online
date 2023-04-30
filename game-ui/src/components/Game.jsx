@@ -114,16 +114,23 @@ function DraggableBox(
     );
 }
 
-function Cursor({position}) {
+function Cursor({position, nickname}) {
     return (
-        <Sprite
-            position={position}
-            texture={Texture.from(cursor)}
-            width={50}
-            height={50}
-            eventMode='none'
-            zIndex={99999999}
-        />
+        <Container position={position}>
+            <Sprite
+                texture={Texture.from(cursor)}
+                width={50}
+                height={50}
+                eventMode='none'
+                zIndex={99999999}
+            />
+            <Text
+                text={nickname}
+                style={{ fill: '#FFFFFF', fontSize: 16 }}
+                anchor={[0.5, 0.5]}
+                position={[50, -30]}
+            />
+        </Container>
     );
 }
 
@@ -218,7 +225,7 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
         })}
         {clients.map((client) => {
             if (client.id === clientId) return null;
-            return <Cursor key={client.id} position={client.cursor}/>
+            return <Cursor key={client.id} position={client.cursor} nickname={client.nickname}/>
         })}
         <Sprite position={{x: 400, y: 200}} texture={Texture.WHITE} width={400} height={400} zIndex={-1}/>
     </Container>;
