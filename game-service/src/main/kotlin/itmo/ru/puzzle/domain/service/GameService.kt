@@ -22,7 +22,7 @@ class GameService(
     private val connections = Collections.synchronizedMap<ClientId, Connection?>(mutableMapOf())
 
     fun connect(session: WebSocketServerSession): Client {
-        val client = Client(ClientId(getUUID()), null)
+        val client = Client(ClientId(getUUID()))
         clientRepository.register(client)
         connections[client.id] = Connection(session)
         return client
@@ -90,9 +90,15 @@ class GameService(
         }
     }
 
-    suspend fun create(client: Client, boxes: List<Box>, session: WebSocketServerSession) {
+    suspend fun create(
+        client: Client,
+        boxes: List<Box>,
+        nickname: String,
+        session: WebSocketServerSession
+    ) {
         val roomId = RoomId(getUUID())
 
+        client.nickname = nickname
         client.cursor = Cursor(0f, 0f)
 
         val room = Room(
@@ -118,7 +124,12 @@ class GameService(
         session.sendSerialized(room.toCreateResponse())
     }
 
-    suspend fun join(clientId: String, roomId: String, session: WebSocketServerSession) {
+    suspend fun join(
+        clientId: String,
+        roomId: String,
+        nickname: String,
+        session: WebSocketServerSession
+    ) {
         if (!roomRepository.contains(roomId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
             return
@@ -136,6 +147,8 @@ class GameService(
             room.deleteRoomActionTimer.cancel()
         }
         room.clients.add(client)
+
+        client.nickname = nickname
         client.cursor = Cursor(0f, 0f)
 
         session.sendSerialized(room.toJoinResponse())

@@ -3,7 +3,10 @@ package itmo.ru.puzzle.domain.model
 @JvmInline
 value class ClientId(val value: String)
 
-data class Client(val id: ClientId, var cursor: Cursor?) {
+data class Client(val id: ClientId) {
+    var nickname: String = ""
+    var cursor: Cursor? = null
+
     override fun hashCode(): Int {
         return id.hashCode()
     }

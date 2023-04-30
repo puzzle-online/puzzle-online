@@ -90,7 +90,7 @@ fun Application.configureRouting() {
 
                             val boxes = createRequest.boxes.map { it.toBox() }
 
-                            gameService.create(client, boxes, this)
+                            gameService.create(client, boxes, createRequest.nickname, this)
                         }
 
                         // TODO: on join unsubscribe from previous game
@@ -98,7 +98,7 @@ fun Application.configureRouting() {
                         Method.JOIN -> {
                             val joinRequest = converter!!.deserialize<JoinRequest>(frame)
 
-                            gameService.join(joinRequest.clientId, joinRequest.roomId, this)
+                            gameService.join(joinRequest.clientId, joinRequest.roomId, joinRequest.nickname, this)
                         }
 
                         Method.PLAY -> {

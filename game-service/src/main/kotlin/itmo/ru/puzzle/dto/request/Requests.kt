@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 data class LeaveRequest(val clientId: String, val roomId: String)
 
 @Serializable
-data class JoinRequest(val clientId: String, val roomId: String)
+data class JoinRequest(val clientId: String, val roomId: String, val nickname: String)
 
 @Serializable
 data class PlayRequest(val clientId: String, val roomId: String, val ball: BallDTO)
@@ -23,4 +23,4 @@ data class MoveRequest(
 )
 
 @Serializable
-data class CreateRequest(val clientId: String, val boxes: List<BoxDTO>)
+data class CreateRequest(val clientId: String, val boxes: List<BoxDTO>, val nickname: String)

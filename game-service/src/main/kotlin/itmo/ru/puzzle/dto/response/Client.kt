@@ -13,7 +13,7 @@ data class ConnectResponse(val clientId: String) : Response(Method.CONNECT)
 fun Client.toConnectResponse() = ConnectResponse(id.value)
 
 @Serializable
-data class ClientCursorUpdateDTO(val id: String, val cursor: CursorDTO?)
+data class ClientCursorUpdateDTO(val id: String, val nickname: String, val cursor: CursorDTO?)
 
-fun Client.toDTO() = ClientCursorUpdateDTO(id.value, cursor?.toDTO())
+fun Client.toDTO() = ClientCursorUpdateDTO(id.value, nickname, cursor?.toDTO())
 
