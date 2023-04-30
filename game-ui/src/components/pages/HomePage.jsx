@@ -1,11 +1,11 @@
-import React from "react";
+import React, {useState} from "react";
 import {Button, Input, Stack, Typography} from "@mui/joy";
 import reactLogo from "../../assets/teamwork.png";
 import Person from "@mui/icons-material/Person";
 import PlayArrow from "@mui/icons-material/PlayArrow";
 import Home from "@mui/icons-material/Home";
 
-function HomePage({onRoomsButtonClick}) {
+function HomePage({onRoomsButtonClick, nickname, setNickname}) {
     return (
         <div>
             <a href="https://reactjs.org" target="_blank">
@@ -25,6 +25,9 @@ function HomePage({onRoomsButtonClick}) {
                     <Input
                         label="Nickname"
                         variant="soft"
+                        placeholder="Enter your nickname"
+                        value={nickname}
+                        onChange={e => setNickname(e.target.value)}
                     />
                 </Stack>
                 <Stack
@@ -33,7 +36,7 @@ function HomePage({onRoomsButtonClick}) {
                     alignItems="center"
                     spacing={2}
                 >
-                    <Button variant="solid" sx={{width: "100%"}} onClick={onRoomsButtonClick}>
+                    <Button variant="solid" sx={{width: "100%"}} onClick={onRoomsButtonClick} disabled={!nickname.trim()}>
                         <Home/>
                         <Typography color="textPrimary" sx={{width: "100%"}}>
                             ROOMS

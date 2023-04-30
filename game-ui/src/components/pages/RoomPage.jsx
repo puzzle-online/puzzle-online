@@ -3,7 +3,7 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import IconButton from "@mui/joy/IconButton";
 import Game from "../Game.jsx";
 
-function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, clientId}) {
+function RoomPage({handlers, sendRequest, onLeaveRoomButtonClick, clientId, nickname}) {
     const [roomId, setRoomId] = useState('');
     const [boxes, setBoxes] = useState([]);
     const [clients, setClients] = useState([]);

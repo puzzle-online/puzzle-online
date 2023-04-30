@@ -10,6 +10,7 @@ function Pages() {
     const [clientId, setClientId] = useState('');
     const [ws, setWs] = useState(null);
     const handlers = useRef({})
+    const [nickname, setNickname] = useState('');
 
     const handleConnect = (response) => {
         setClientId(response.clientId);
@@ -60,7 +61,7 @@ function Pages() {
     };
 
 
-    const handleRoomsButtonClick = () => {
+    const handleRoomsButtonClick = (nickname) => {
         setPage('rooms');
     }
 
@@ -74,7 +75,7 @@ function Pages() {
     }
 
     const handleJoinButtonClick = (roomId) => {
-        sendRequest('join', {roomId: roomId});
+        sendRequest('join', {roomId: roomId, nickname: nickname});
         setPage('room');
     }
 
@@ -91,17 +92,32 @@ function Pages() {
                     state: "released", // TODO: reconsider
                 });
             }),
+            nickname: nickname,
         });
         setPage('room');
     }
 
     return <>
-        {page === 'home' && <HomePage onRoomsButtonClick={handleRoomsButtonClick}/>}
-        {page === 'rooms' &&
-            <RoomsPage handlers={handlers} sendRequest={sendRequest} onBackButtonClick={handleBackButtonClick}
-                       onJoinButtonClick={handleJoinButtonClick} onCreateButtonClick={handleCreateButtonClick}/>}
-        {page === 'room' &&
-            <RoomPage handlers={handlers} sendRequest={sendRequest} onLeaveRoomButtonClick={handleLeaveButtonClick} clientId={clientId}/>}
+        {page === 'home' && <HomePage
+            onRoomsButtonClick={handleRoomsButtonClick}
+            nickname={nickname}
+            setNickname={setNickname}
+        />}
+        {page === 'rooms' && <RoomsPage
+            handlers={handlers}
+            sendRequest={sendRequest}
+            onBackButtonClick={handleBackButtonClick}
+            onJoinButtonClick={handleJoinButtonClick}
+            onCreateButtonClick={handleCreateButtonClick}
+            nickname={nickname}
+        />}
+        {page === 'room' && <RoomPage
+            handlers={handlers}
+            sendRequest={sendRequest}
+            onLeaveRoomButtonClick={handleLeaveButtonClick}
+            clientId={clientId}
+            nickname={nickname}
+        />}
     </>;
 }
 
