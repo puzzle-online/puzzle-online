@@ -227,7 +227,7 @@ function ContainerWrapper({sendRequest, roomId, boxes, clients, clientId}) {
             if (client.id === clientId) return null;
             return <Cursor key={client.id} position={client.cursor} nickname={client.nickname}/>
         })}
-        <Sprite position={{x: 400, y: 200}} texture={Texture.WHITE} width={400} height={400} zIndex={-1}/>
+        <Sprite position={{x: 400, y: 200}} texture={Texture.WHITE} width={400} height={400} zIndex={-2}/>
     </Container>;
 }
 
