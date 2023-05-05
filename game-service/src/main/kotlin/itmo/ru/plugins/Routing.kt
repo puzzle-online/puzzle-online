@@ -3,6 +3,7 @@ package itmo.ru.plugins
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.ktor.serialization.*
 import io.ktor.server.application.*
+import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import itmo.ru.puzzle.domain.repository.ClientRepository
@@ -149,6 +150,10 @@ fun Application.configureRouting() {
             } finally {
                 gameService.disconnect(client)
             }
+        }
+        // http that returns index.html
+        static("/") {
+            resources("static")
         }
     }
 }
