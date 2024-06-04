@@ -3,6 +3,7 @@ package itmo.ru.puzzle.domain.service
 import io.ktor.server.websocket.*
 import io.ktor.util.logging.*
 import io.ktor.websocket.*
+import itmo.ru.ROOM_UPDATE_RESPONSE_INTERVAL
 import itmo.ru.plugins.Connection
 import itmo.ru.plugins.getUUID
 import itmo.ru.puzzle.domain.model.*
@@ -35,15 +36,78 @@ class GameService(
         logger.info("All connected clients: ${clientRepository.getAllClients()}")
     }
 
-    suspend fun create(client: Client, session: WebSocketServerSession) {
+    suspend fun handleMove(
+        clientId: String,
+        roomId: String,
+        updateCursor: Cursor,
+        updateBox: Box?,
+        session: WebSocketServerSession
+    ) {
+        if (!roomRepository.contains(roomId)) {
+            session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
+            return
+        }
+
+        if (!clientRepository.contains(clientId)) {
+            session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Client $clientId not found"))
+            return
+        }
+
+        val room = roomRepository.get(roomId)!!
+        val client = clientRepository.get(clientId)!!
+
+        client.cursor = updateCursor
+        if (updateBox != null) {
+            room.boxes.find { it.id == updateBox.id }?.let { serverBox ->
+                if (serverBox.state == State.SOLVED) {
+                    return
+                }
+                when (updateBox.state) {
+                    State.MOVING -> {
+                        serverBox.x = updateBox.x
+                        serverBox.y = updateBox.y
+                        serverBox.z = updateBox.z
+                        serverBox.state = updateBox.state
+                    }
+
+                    State.RELEASED -> {
+                        if (updateBox.isCorrectlyPlaced) {
+                            serverBox.x = serverBox.correctX
+                            serverBox.y = serverBox.correctY
+                            serverBox.z = -1
+                            serverBox.state = State.SOLVED
+                        } else {
+                            serverBox.x = updateBox.x
+                            serverBox.y = updateBox.y
+                            serverBox.z = updateBox.z
+                            serverBox.state = updateBox.state
+                        }
+                    }
+
+                    State.SOLVED -> logger.error("Unreachable branch: Box ${serverBox.id} state is SOLVED.")
+                }
+            }
+        }
+    }
+
+    suspend fun create(
+        client: Client,
+        boxes: List<Box>,
+        nickname: String,
+        session: WebSocketServerSession
+    ) {
         val roomId = RoomId(getUUID())
+
+        client.nickname = nickname
+        client.cursor = Cursor(0f, 0f)
 
         val room = Room(
             roomId,
             MutableList(10) {
                 Ball(BallId(it), Color.values().random())
             },
-            mutableSetOf(client)
+            mutableSetOf(client),
+            boxes.toMutableSet(),
         )
 
         room.updateJob = CoroutineScope(Dispatchers.Default).launch {
@@ -51,7 +115,7 @@ class GameService(
                 room.clients.forEach { client ->
                     connections[client.id]?.session?.sendSerialized(room.toUpdateResponse())
                 }
-                delay(5000)
+                delay(ROOM_UPDATE_RESPONSE_INTERVAL)
             }
         }
 
@@ -60,13 +124,20 @@ class GameService(
         session.sendSerialized(room.toCreateResponse())
     }
 
-    suspend fun join(clientId: String, roomId: String, session: WebSocketServerSession) {
+    suspend fun join(
+        clientId: String,
+        roomId: String,
+        nickname: String,
+        session: WebSocketServerSession
+    ) {
         if (!roomRepository.contains(roomId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
+            return
         }
 
         if (!clientRepository.contains(clientId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Client $clientId not found"))
+            return
         }
 
         val room = roomRepository.get(roomId)!!
@@ -77,12 +148,16 @@ class GameService(
         }
         room.clients.add(client)
 
+        client.nickname = nickname
+        client.cursor = Cursor(0f, 0f)
+
         session.sendSerialized(room.toJoinResponse())
     }
 
     suspend fun play(roomId: String, ball: Ball, session: WebSocketServerSession) {
         if (!roomRepository.contains(roomId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
+            return
         }
 
         val room = roomRepository.get(roomId)!!
@@ -94,10 +169,12 @@ class GameService(
     suspend fun leave(clientId: String, roomId: String, session: WebSocketServerSession) {
         if (!clientRepository.contains(clientId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Client $clientId not found"))
+            return
         }
 
         if (!roomRepository.contains(roomId)) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room $roomId not found"))
+            return
         }
 
         val room = roomRepository.get(roomId)!!
@@ -128,6 +205,7 @@ class GameService(
         logger.debug("Clients before removing {}: {}", client.id, this.clients)
 
         this.clients.remove(client)
+        client.cursor = null
 
         logger.debug("Clients after removing {}: {}", client.id, this.clients)
 

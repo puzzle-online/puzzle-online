@@ -134,7 +134,7 @@ function Actions({selectedRoomId, onJoinButtonClick, onCreateButtonClick}) {
 
 function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick, onCreateButtonClick}) {
     const [selectedRoomId, setSelectedRoomId] = useState('');
-    const [rooms, setRooms] = useState([]);
+    const [rooms, setRooms] = useState(null);
 
     // TODO: save event handlers if ws socket loss occurs and add all listeners on ws socket open
     useEffect(() => {
@@ -152,6 +152,14 @@ function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick,
         console.log(`Rooms: ${response.rooms}`);
     }
 
+    let roomsDOM;
+    if (rooms === null) {
+        roomsDOM = "Loading...";
+    } else if (rooms.length === 0) {
+        roomsDOM = "No rooms available, create one!";
+    } else {
+        roomsDOM = <Rooms rooms={rooms} selectedRoomId={selectedRoomId} updateSelectedRoomId={setSelectedRoomId}/>;
+    }
     return (
         <Stack
             direction="column"
@@ -160,7 +168,7 @@ function RoomsPage({handlers, sendRequest, onBackButtonClick, onJoinButtonClick,
             spacing={2}
         >
             <TopBar onBackButtonClick={onBackButtonClick} onRefreshButtonClick={onRefreshButtonClick}/>
-            <Rooms rooms={rooms} selectedRoomId={selectedRoomId} updateSelectedRoomId={setSelectedRoomId}/>
+            {roomsDOM}
             <Actions selectedRoomId={selectedRoomId} onJoinButtonClick={onJoinButtonClick} onCreateButtonClick={onCreateButtonClick}/>
         </Stack>
     )

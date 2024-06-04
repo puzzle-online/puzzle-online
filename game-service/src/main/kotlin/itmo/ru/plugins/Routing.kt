@@ -3,15 +3,16 @@ package itmo.ru.plugins
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.ktor.serialization.*
 import io.ktor.server.application.*
+import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import itmo.ru.puzzle.domain.repository.ClientRepository
 import itmo.ru.puzzle.domain.repository.RoomRepository
 import itmo.ru.puzzle.domain.service.GameService
-import itmo.ru.puzzle.dto.request.JoinRequest
-import itmo.ru.puzzle.dto.request.LeaveRequest
-import itmo.ru.puzzle.dto.request.PlayRequest
-import itmo.ru.puzzle.dto.request.toBall
+import itmo.ru.puzzle.dto.request.*
+import itmo.ru.puzzle.dto.toBall
+import itmo.ru.puzzle.dto.toBox
+import itmo.ru.puzzle.dto.toCursor
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
@@ -42,7 +43,10 @@ enum class Method {
     ROOMS,
 
     @SerialName("leave")
-    LEAVE;
+    LEAVE,
+
+    @SerialName("move")
+    MOVE;
 
     override fun toString() = name.lowercase(Locale.getDefault())
 }
@@ -82,21 +86,27 @@ fun Application.configureRouting() {
                 for (frame in incoming) {
                     val data = converter?.deserialize<Response>(frame)!!
                     when (data.method) {
-                        Method.CREATE -> gameService.create(client, this)
+                        Method.CREATE -> {
+                            val createRequest = converter!!.deserialize<CreateRequest>(frame)
+
+                            val boxes = createRequest.boxes.map { it.toBox() }
+
+                            gameService.create(client, boxes, createRequest.nickname, this)
+                        }
 
                         // TODO: on join unsubscribe from previous game
                         // TODO: don't send clientId in JoinRequest
                         Method.JOIN -> {
                             val joinRequest = converter!!.deserialize<JoinRequest>(frame)
 
-                            gameService.join(joinRequest.clientId, joinRequest.roomId, this)
+                            gameService.join(joinRequest.clientId, joinRequest.roomId, joinRequest.nickname, this)
                         }
 
                         Method.PLAY -> {
                             val playRequest = converter!!.deserialize<PlayRequest>(frame)
 
                             // TODO: maybe remove this
-                            val ball = playRequest.toBall()
+                            val ball = playRequest.ball.toBall()
 
                             this@configureRouting.log.info(
                                 "Received set request for room ${playRequest.roomId} and ball ${ball.id} with color ${ball.color} from client ${playRequest.clientId}"
@@ -119,6 +129,19 @@ fun Application.configureRouting() {
                             gameService.leave(leaveRequest.clientId, leaveRequest.roomId, this)
                         }
 
+                        Method.MOVE -> {
+                            val moveRequest = converter!!.deserialize<MoveRequest>(frame)
+
+                            val box = moveRequest.box?.toBox()
+                            val cursor = moveRequest.cursor.toCursor()
+
+                            this@configureRouting.log.info(
+                                "Received move request $moveRequest"
+                            )
+
+                            gameService.handleMove(moveRequest.clientId, moveRequest.roomId, cursor, box, this)
+                        }
+
                         else -> this@configureRouting.log.error("Unknown method ${data.method}")
                     }
                 }
@@ -127,6 +150,10 @@ fun Application.configureRouting() {
             } finally {
                 gameService.disconnect(client)
             }
+        }
+        // http that returns index.html
+        static("/") {
+            resources("static")
         }
     }
 }

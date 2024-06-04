@@ -1,9 +1,6 @@
-import {useEffect, useRef, useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import './App.css'
-
-import React from 'react';
 import HomePage from "./components/pages/HomePage.jsx";
-import Header from "./components/Header.jsx";
 import RoomsPage from "./components/pages/RoomsPage.jsx";
 import RoomPage from "./components/pages/RoomPage.jsx";
 
@@ -13,6 +10,7 @@ function Pages() {
     const [clientId, setClientId] = useState('');
     const [ws, setWs] = useState(null);
     const handlers = useRef({})
+    const [nickname, setNickname] = useState('');
 
     const handleConnect = (response) => {
         setClientId(response.clientId);
@@ -45,13 +43,13 @@ function Pages() {
         };
         newWs.onmessage = handleIncomingMessage
         newWs.onclose = () => {
-            console.log('WebSocket disconnected');
+            console.error('WebSocket disconnected');
             connect();
         };
         setWs(newWs);
     };
 
-    const sendRequest = (method, data) => /*(e) => */{
+    const sendRequest = (method, data) => /*(e) => */ {
         console.log(`sending request with method ${method} and data:`)
         console.log(data)
         // e.preventDefault();
@@ -63,7 +61,7 @@ function Pages() {
     };
 
 
-    const handleRoomsButtonClick = () => {
+    const handleRoomsButtonClick = (nickname) => {
         setPage('rooms');
     }
 
@@ -72,32 +70,63 @@ function Pages() {
     }
 
     const handleLeaveButtonClick = (roomId) => {
-        sendRequest('leave', { roomId: roomId });
+        sendRequest('leave', {roomId: roomId});
         setPage('home');
     }
 
     const handleJoinButtonClick = (roomId) => {
-        sendRequest('join', { roomId: roomId });
+        sendRequest('join', {roomId: roomId, nickname: nickname});
         setPage('room');
     }
 
     const handleCreateButtonClick = () => {
-        sendRequest('create', {});
+        sendRequest('create', {
+            boxes: [...Array(16)].map((_, i) => {
+                let x = Math.random() * 300;
+                let y = Math.random() * 700;
+                return ({
+                    id: i,
+                    x: Math.floor((Math.random() < 0.5 ? x : x + 400 + 400)),
+                    y: Math.floor(y),
+                    z: i,
+                    state: "released", // TODO: reconsider
+                });
+            }),
+            nickname: nickname,
+        });
         setPage('room');
     }
 
     return <>
-        {page === 'home' && <HomePage onRoomsButtonClick={handleRoomsButtonClick}/>}
-        {page === 'rooms' && <RoomsPage handlers={handlers} sendRequest={sendRequest} onBackButtonClick={handleBackButtonClick} onJoinButtonClick={handleJoinButtonClick} onCreateButtonClick={handleCreateButtonClick}/>}
-        {page === 'room' && <RoomPage handlers={handlers} sendRequest={sendRequest} onLeaveRoomButtonClick={handleLeaveButtonClick}/>}
+        {page === 'home' && <HomePage
+            onRoomsButtonClick={handleRoomsButtonClick}
+            nickname={nickname}
+            setNickname={setNickname}
+        />}
+        {page === 'rooms' && <RoomsPage
+            handlers={handlers}
+            sendRequest={sendRequest}
+            onBackButtonClick={handleBackButtonClick}
+            onJoinButtonClick={handleJoinButtonClick}
+            onCreateButtonClick={handleCreateButtonClick}
+            nickname={nickname}
+        />}
+        {page === 'room' && <RoomPage
+            handlers={handlers}
+            sendRequest={sendRequest}
+            onLeaveRoomButtonClick={handleLeaveButtonClick}
+            clientId={clientId}
+            nickname={nickname}
+        />}
     </>;
 }
 
 function App() {
     return (
         <div className="App">
-            <Header/>
+            {/*<Header/>*/}
             <Pages/>
+            {/*<Game/>*/}
         </div>
     )
 }
